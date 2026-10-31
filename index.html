@@ -152,6 +152,16 @@
         font-size: .85rem; font-weight: 600;
       }
       .fabhint { font-size: .68rem; font-weight: 600; color: #6b7280; margin-right: .3rem; }
+      /* Runder Teilen-Knopf (ueber "neu laden"): Chrome-uebliches
+         Teilen-Symbol, oeffnet den nativen Share-Dialog */
+      .fabshare {
+        border: none; background: #1e3a8a; color: #fff; cursor: pointer;
+        width: 46px; height: 46px; border-radius: 50%;
+        box-shadow: 0 4px 14px rgba(0,0,0,.3);
+        display: flex; align-items: center; justify-content: center;
+      }
+      .fabshare:active { background: #1d4ed8; }
+      .fabshare svg { width: 24px; height: 24px; }
 
       /* Pin-URL-Eingabe entfernt (31.10.): Pinnen laeuft nur noch ueber
          die Heute-Karten (Toggle) bzw. den ✕-Chip. */
@@ -357,7 +367,10 @@
 
     <!-- Schwebende Steuerung unten rechts über dem Ticker -->
     <div class="floatbar">
-      <span class="fabhint">Ticker hängt?</span>
+      <button class="fabshare" id="floatShare" title="Diese Ansicht weitergeben">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><line x1="8.4" y1="10.8" x2="15.6" y2="6.3"/><line x1="8.4" y1="13.2" x2="15.6" y2="17.7"/></svg>
+      </button>
+      <span class="fabhint" id="fabHint">Ticker hängt?</span>
       <button class="fabbig" id="floatReload" title="Ticker neu laden">🔄 neu laden</button>
     </div>
 
@@ -647,7 +660,7 @@
       // Fallback ohne Web Share API: Link in die Zwischenablage kopieren
       document.getElementById("introShareBtn").onclick = (ev) => {
         ev.stopPropagation();
-        const daten = { title: "ASV Ticker", text: "Spielpläne, Tabellen & Live-Ticker des ASV Dachau – jetzt alle Spiele live dabei:", url: "https://luigitare.github.io/asv-dachau-ticker/" };
+        const daten = { title: "ASV Ticker", text: "🏐 Volleyball-Ergebnisse & Live-Ticker aller BVV-Teams – vom ASV Dachau:", url: "https://luigitare.github.io/asv-dachau-ticker/" };
         const btn = ev.currentTarget;
         if (navigator.share) {
           navigator.share(daten).catch(() => {});
@@ -719,17 +732,54 @@
       const noFilterView = document.getElementById("nofilterview");
       const nfFrame = document.getElementById("nfFrame");
       const floatReload = document.getElementById("floatReload");
+      const floatShare = document.getElementById("floatShare");
+      const fabHint = document.getElementById("fabHint");
       const floatBar = document.querySelector(".floatbar");
       // Schwebender Knopf: nur in der Ticker-Ansicht sinnvoll
       function updateFloatbar() {
         const tickerActive = !state.search && (state.noFilter
           || ((state.entry !== null || !!state.fremd) && (state.tab || "ticker") === "ticker"));
-        floatBar.style.display = tickerActive ? "flex" : "none";
+        // Teilen-Knopf bleibt immer sichtbar (jede Ansicht ist teilbar),
+        // Neu-laden + Hinweis nur in der Ticker-Ansicht sinnvoll
+        floatBar.style.display = "flex";
+        floatReload.style.display = tickerActive ? "flex" : "none";
+        fabHint.style.display = tickerActive ? "" : "none";
       }
       // Schwebender Knopf wirkt auf die gerade aktive Ansicht
       floatReload.onclick = () => {
         const act = document.querySelector(".entry.active");
         if (act && act._reload) act._reload();
+      };
+      // ---------------- Teilen (runder Knopf) + Deep-Links ----------------
+      // Der Link oeffnet beim Empfaenger dieselbe Ansicht: ?q= Suche,
+      // ?team= ASV-Mannschaft (ueber die Wettbewerb-Id), ?fremd= fremdes
+      // Team (series|teamId|Name) - ohne dass er selbst suchen muss.
+      const APP_URL = "https://luigitare.github.io/asv-dachau-ticker/";
+      function deepLink() {
+        if (state.search && suchText.trim()) return APP_URL + "?q=" + encodeURIComponent(suchText.trim());
+        if (state.fremd) return APP_URL + "?fremd=" + state.fremd.series + "|" + state.fremd.teamId + "|" + encodeURIComponent(state.fremd.name);
+        if (state.entry !== null && CONFIG[state.entry]) return APP_URL + "?team=" + CONFIG[state.entry].wettbewerb;
+        return APP_URL;
+      }
+      function shareDaten() {
+        if (state.search && suchText.trim()) return { title: "ASV Ticker", text: "🏐 Spiele von „" + suchText.trim() + "“ – Live-Ticker & Ergebnisse:", url: deepLink() };
+        if (state.fremd) return { title: "ASV Ticker", text: "🏐 " + state.fremd.name + " – Live-Ticker & Ergebnisse:", url: deepLink() };
+        if (state.entry !== null && CONFIG[state.entry]) return { title: "ASV Ticker", text: "🏐 ASV Dachau " + CONFIG[state.entry].grp + " – Spielplan, Ergebnisse & Live-Ticker:", url: deepLink() };
+        return { title: "ASV Ticker", text: "🏐 Volleyball-Ergebnisse & Live-Ticker aller BVV-Teams – vom ASV Dachau:", url: APP_URL };
+      }
+      floatShare.onclick = (ev) => {
+        ev.stopPropagation();
+        const daten = shareDaten();
+        if (navigator.share) {
+          navigator.share(daten).catch(() => {});
+        } else {
+          try {
+            navigator.clipboard.writeText(daten.text + " " + daten.url);
+            floatShare.style.background = "#16a34a";
+            floatShare.title = "✅ Link kopiert!";
+            setTimeout(() => { floatShare.style.background = ""; floatShare.title = "Diese Ansicht weitergeben"; }, 2000);
+          } catch (e) {}
+        }
       };
       // Die drei Modus-Buttons (Zeile 0 im Menü) werden in renderModeRow()
       // gerendert – hier nur die View-Referenzen, die schon gebraucht wurden.
@@ -1571,7 +1621,7 @@
         } else if (state.search) {
           menuBtnLabel.textContent = "🔍 Suche";
         } else if (state.fremd) {
-          menuBtnLabel.textContent = "🔍 " + state.fremd.name + " · " + state.fremd.klasse;
+          menuBtnLabel.textContent = "🔍 " + state.fremd.name + (state.fremd.klasse ? " · " + state.fremd.klasse : "");
         } else if (state.entry !== null) {
           const e = CONFIG[state.entry];
           const cat = CATS.find((c) => c.id === state.cat);
@@ -1608,6 +1658,43 @@
         updateFloatbar();
         saveState();
       }
+      // ---------------- Deep-Links (?q / ?team / ?fremd) ----------------
+      // Geteilte Links oeffnen beim Empfaenger direkt dieselbe Ansicht.
+      // Wird NUR beim Start ausgewertet - danach verhaelt sich die App
+      // exakt wie bisher (localStorage-Auswahl bleibt unberuehrt).
+      function initDeepLink() {
+        let p;
+        try { p = new URLSearchParams(location.search); } catch (e) { return; }
+        const q = p.get("q");
+        const team = p.get("team");
+        const fr = p.get("fremd");
+        if (q) {
+          state.noFilter = false; state.asvHeute = false;
+          state.search = true; state.fremd = null;
+          suchText = q; menuOpen = true;
+        } else if (team) {
+          const t = CONFIG.find((e) => e.wettbewerb === team);
+          if (t) {
+            state.noFilter = false; state.asvHeute = false; state.search = false; state.fremd = null;
+            state.cat = t.cat; state.grp = t.grp; state.entry = t.idx;
+            rememberEntry(t.cat, t.grp, t.idx);
+            state.tab = "ticker";
+            menuOpen = false;
+          }
+        } else if (fr) {
+          const teile = fr.split("|");
+          if (teile[0] && teile[1]) {
+            const name = teile.length > 2 ? decodeURIComponent(teile.slice(2).join("|")) : "Mannschaft";
+            state.noFilter = false; state.asvHeute = false; state.search = false;
+            state.cat = null; state.grp = null; state.entry = null;
+            state.fremd = { name: name, klasse: "", series: teile[0], teamId: teile[1], liga: "" };
+            state.tab = "ticker";
+            menuOpen = false;
+          }
+        }
+      }
+      initDeepLink();
+
       renderAll();
 
       // ---------------- Live-Ticker-Index (klickbare Spielplan-Zeilen) ----------------
@@ -1633,6 +1720,13 @@
           }));
         }
         tickerLigen = (data && data.ligen) || {};
+        // Deep-Link (?fremd=): Team-Klasse nachliefern, sobald die
+        // Liga-Infos da sind (beim Link-Oeffnen ist der Index noch leer)
+        if (state.fremd && !state.fremd.klasse) {
+          state.fremd.klasse = katFromLiga(state.fremd.series);
+          state.fremd.liga = (tickerLigen[state.fremd.series] || {}).n || "";
+          menuBtnLabel.textContent = "🔍 " + state.fremd.name + " · " + state.fremd.klasse;
+        }
         tickerIndex = idx;
         renderHeuteRow();
         renderAsvHeuteRow();
