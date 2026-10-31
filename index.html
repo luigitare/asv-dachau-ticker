@@ -151,7 +151,9 @@
         height: 46px; border-radius: 999px; padding: 0 1.1rem; gap: .4rem;
         font-size: .85rem; font-weight: 600;
       }
-      .fabhint { font-size: .68rem; font-weight: 600; color: #6b7280; margin-right: .3rem; }
+      /* "Ticker hängt?" als kleine Zeile IM blauen Neu-laden-Knopf */
+      .fabbig { flex-direction: column; gap: .1rem; height: auto; padding: .38rem 1.1rem; }
+      .fabhintline { font-size: .68rem; font-weight: 600; opacity: .85; }
       /* Runder Teilen-Knopf (ueber "neu laden"): Chrome-uebliches
          Teilen-Symbol, oeffnet den nativen Share-Dialog */
       .fabshare {
@@ -370,8 +372,7 @@
       <button class="fabshare" id="floatShare" title="Diese Ansicht weitergeben">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="18" cy="5" r="2.6"/><circle cx="6" cy="12" r="2.6"/><circle cx="18" cy="19" r="2.6"/><line x1="8.4" y1="10.8" x2="15.6" y2="6.3"/><line x1="8.4" y1="13.2" x2="15.6" y2="17.7"/></svg>
       </button>
-      <span class="fabhint" id="fabHint">Ticker hängt?</span>
-      <button class="fabbig" id="floatReload" title="Ticker neu laden">🔄 neu laden</button>
+      <button class="fabbig" id="floatReload" title="Ticker neu laden"><span class="fabhintline">Ticker hängt?</span><span>🔄 neu laden</span></button>
     </div>
 
     <p class="note">
@@ -733,7 +734,6 @@
       const nfFrame = document.getElementById("nfFrame");
       const floatReload = document.getElementById("floatReload");
       const floatShare = document.getElementById("floatShare");
-      const fabHint = document.getElementById("fabHint");
       const floatBar = document.querySelector(".floatbar");
       // Schwebender Knopf: nur in der Ticker-Ansicht sinnvoll
       function updateFloatbar() {
@@ -743,7 +743,6 @@
         // Neu-laden + Hinweis nur in der Ticker-Ansicht sinnvoll
         floatBar.style.display = "flex";
         floatReload.style.display = tickerActive ? "flex" : "none";
-        fabHint.style.display = tickerActive ? "" : "none";
       }
       // Schwebender Knopf wirkt auf die gerade aktive Ansicht
       floatReload.onclick = () => {
