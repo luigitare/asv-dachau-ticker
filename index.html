@@ -1277,7 +1277,7 @@
             const hinweis = document.createElement("div");
             hinweis.className = "suchhint";
             hinweis.style.margin = "0 0 .3rem";
-            hinweis.textContent = "ℹ️ Nur Live- und beendete Spiele lassen sich aufrufen – geplante erst ab Spielbeginn.";
+            hinweis.textContent = "ℹ️ Live- und beendete Spiele öffnen den Ticker des Spiels – geplante führen zur Mannschaftsansicht.";
             wrap.appendChild(hinweis);
           }
           spiele.forEach((m) => {
@@ -1287,7 +1287,7 @@
             const fertig = !!m.fi;
             const zeit = zeitFmt.format(new Date(m.date));
             const card = document.createElement("button");
-            card.className = "asvcard" + (live ? " live" : "") + (fertig ? " done" : "") + (!live && !fertig ? " inaktiv" : "");
+            card.className = "asvcard" + (live ? " live" : "") + (fertig ? " done" : "") + (!live && !fertig && !t ? " inaktiv" : "");
             const zeitHtml = live
               ? '<span class="livedot"></span><span class="hc-zeit">LIVE</span>'
               : '<span class="hc-zeit">📅 ' + (zeit === "00:00" ? "–" : zeit) + '</span>';
@@ -1297,10 +1297,12 @@
             const paarung =
               '<span><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b></span>';
             card.innerHTML = '<span class="klasse">' + escHtml(klasse) + '</span>' + zeitHtml + paarung + ergHtml;
-            if ((live || fertig) && t) {
+            if (t) {
               card.title = live
                 ? "Zum Live-Ticker: Mannschaftsfilter wechseln + Spiel anpinnen"
-                : "Beendet – Ticker mit dem Spielverlauf öffnen";
+                : fertig
+                  ? "Beendet – Ticker mit dem Spielverlauf öffnen"
+                  : "Zur Mannschaft: Spielplan & Ticker ihrer Liga öffnen";
               card.onclick = () => {
                 state.noFilter = false;
                 state.asvHeute = false;
@@ -1309,6 +1311,13 @@
                 rememberEntry(t.cat, t.grp, t.idx);
                 state.tab = "ticker";
                 saveState();
+                // Geplantes Spiel (Nutzer-Wunsch 31.10.): KEIN Pin,
+                // nur auf die Mannschaft filtern -> Liga-Ansicht.
+                if (!live && !fertig) {
+                  menuOpen = false;
+                  renderAll();
+                  return;
+                }
                 // Toggle (31.10.-Fix): Pin VOR renderAll aendern, sonst
                 // rendert die Heute-Karte mit altem Pin-Stand (weiss).
                 const u = "https://bvv.sams-ticker.de/detail/" + m.id;
@@ -1317,7 +1326,7 @@
                 renderAll();
               };
             } else {
-              card.title = fertig ? "Beendet" : "Klickbar, sobald der Ticker zum Spiel angelegt ist";
+              card.title = "Klickbar, sobald die Mannschaft zugeordnet ist";
             }
             wrap.appendChild(card);
           });
