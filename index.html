@@ -116,6 +116,15 @@
         padding: .3rem .7rem; font-size: .8rem; cursor: pointer;
       }
       .chip.active { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
+      /* Heute-Zahl an Chips (Nutzer-Wunsch 02.11.): kleines rotes
+         Badge = ASV-Spiele heute in diesem Bereich / dieser Mannschaft.
+         Nur sichtbar wenn > 0, sonst unveraenderter Chip. */
+      .chipbadge {
+        display: inline-block; margin-left: .35rem; padding: 0 .38rem;
+        background: #dc2626; color: #fff; border-radius: 999px;
+        font-size: .68rem; font-weight: 700; line-height: 1.35;
+        vertical-align: middle;
+      }
 
       .panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .28s ease; }
       .panel.open { grid-template-rows: 1fr; }
@@ -797,10 +806,17 @@
       const grpRow = document.getElementById("grpRow");
       const entryRow = document.getElementById("entryRow");
 
-      function chip(label, active, onclick) {
+      function chip(label, active, onclick, badge) {
         const b = document.createElement("button");
         b.className = "chip" + (active ? " active" : "");
         b.textContent = label;
+        // Heute-Zahl anhaengen (nur wenn > 0), siehe .chipbadge
+        if (badge && badge > 0) {
+          const z = document.createElement("span");
+          z.className = "chipbadge";
+          z.textContent = badge;
+          b.appendChild(z);
+        }
         // stopPropagation: Klicks im Menür dürfen nie als "außerhalb"
         // gewertet werden (das Overlay-Karten-Innere wird bei jedem
         // Klick neu gerendert, sonst würde das Menü scheinbar willkürlich
@@ -880,7 +896,23 @@
         }));
       }
 
+      // ---------------- Heute-Zahlen an den Chips (02.11.) ----------------
+      // Kleines rotes Zahl-Badge an Bereichs-/Mannschafts-Chips: wie viele
+      // ASV-Spiele heute in diesen Bereich/diese Mannschaft fallen.
+      // Nutzt denselben Abgleich wie die ASV-heute-Liste (Index +
+      // configForMatch), Badge nur wenn > 0.
+      function asvHeuteSpiele() {
+        if (!tickerIndex || !tickerIndex.length) return [];
+        const heute = berlinTag(Date.now());
+        return tickerIndex.filter((m) => berlinTag(m.date) === heute &&
+          ((m.t1r && m.t1r.includes("ASV Dachau")) || (m.t2r && m.t2r.includes("ASV Dachau"))));
+      }
+      function asvHeuteCount(spiele, pred) {
+        return spiele.filter((m) => { const t = configForMatch(m); return t && pred(t, m); }).length;
+      }
+
       function renderCatRow() {
+        const heuteSpiele = asvHeuteSpiele();
         catRow.innerHTML = '<div class="rowlabel">1 · Bereich</div>';
         CATS.forEach((c) => {
           catRow.appendChild(chip(c.label, state.cat === c.id && !state.asvHeute, () => {
@@ -895,7 +927,7 @@
             state.entry = state.grp !== null ? (state.lastEntryByGrp[c.id + "|" + state.grp] ?? null) : null;
             autoAdvance(c.id);
             renderAll();
-          }));
+          }, asvHeuteCount(heuteSpiele, (t) => t.cat === c.id)));
         });
         // "Alle ASV Spiele heute" gehoert in die Bereichs-Zeile
         // (Nutzer-Wunsch 31.10.: neben Herren/Damen/Jugend m/w)
@@ -907,10 +939,11 @@
           state.tab = "ticker"; // Spielplan/Tabelle-Tabs sind in diesem Modus weg
           menuOpen = false;
           renderAll();
-        }));
+        }, heuteSpiele.length));
       }
 
       function renderGrpRow() {
+        const heuteSpiele = asvHeuteSpiele();
         grpRow.innerHTML = '<div class="rowlabel">2 · Mannschaft / Altersklasse</div>';
         if (state.cat === null) return;
         grpsOfCat(state.cat).forEach((g) => {
@@ -921,11 +954,12 @@
             state.entry = state.lastEntryByGrp[state.cat + "|" + g] ?? null;
             autoAdvance(state.cat);
             renderAll();
-          }));
+          }, asvHeuteCount(heuteSpiele, (t) => t.cat === state.cat && t.grp === g)));
         });
       }
 
       function renderEntryRow() {
+        const heuteSpiele = asvHeuteSpiele();
         entryRow.innerHTML = '<div class="rowlabel">3 · Team / Wettbewerb</div>';
         if (state.grp === null) return;
         CONFIG.filter((e) => e.cat === state.cat && e.grp === state.grp).forEach((e) => {
@@ -935,7 +969,7 @@
             state.fremd = null;
             rememberEntry(state.cat, state.grp, e.idx);
             renderAll(); // Menü bleibt offen (Schließen nur explizit)
-          }));
+          }, heuteSpiele.filter((m) => configForMatch(m) === e).length));
         });
       }
 
@@ -1727,6 +1761,10 @@
           menuBtnLabel.textContent = "🔍 " + state.fremd.name + " · " + state.fremd.klasse;
         }
         tickerIndex = idx;
+        // Chips mit Heute-Zahlen versorgen (Badges brauchen den Index)
+        renderCatRow();
+        renderGrpRow();
+        renderEntryRow();
         renderHeuteRow();
         renderAsvHeuteRow();
         updateSuchErgebnisse();
