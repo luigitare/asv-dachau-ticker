@@ -24,6 +24,18 @@
         "Lechrain Volleys",
         "ASV Dachau IV"
       ]
+    },
+    {
+      "wettbewerb": "d14a83b4-3109-4be5-835b-e56282234a5b",
+      "liga": "Obb - Bezirksklasse 1 Frauen",
+      "spiele": 1,
+      "asvTeams": [
+        "ASV Dachau IV"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau IV",
+        "SG Amper Volleys II"
+      ]
     }
   ]
 }
