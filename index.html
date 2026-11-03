@@ -58,6 +58,15 @@
         padding: .5rem .7rem; font-size: .95rem; background: #fff;
       }
       .suchhint { font-size: .72rem; color: #6b7280; }
+      /* Tages-Überschriften in der ASV-Spiele-Liste (02.11.):
+         "Heute" / "Morgen" / "So, 08.11." ueber dem ersten Spiel
+         jedes Tags, dezent wie die Bereichs-Labels. */
+      .taglabel {
+        font-size: .7rem; color: #6b7280; font-weight: 700;
+        text-transform: uppercase; letter-spacing: .05em;
+        margin: .35rem 0 -.05rem; padding-top: .15rem;
+      }
+      .taglabel:first-child { margin-top: 0; }
       .suchcards { display: flex; flex-direction: column; gap: .4rem; }
       /* Gruppierung: eine Karte pro Mannschaft, Spiel-Anzahl + Pfeil */
       .asvcard .count { font-size: .72rem; color: #6b7280; }
@@ -1346,9 +1355,9 @@
           const heute = berlinTag(Date.now());
           const zeitFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" });
           const tagDatumFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", weekday: "short", day: "2-digit", month: "2-digit" });
-          // Sortierung (Nutzer-Wunsch 31.10.): LIVE-Spiele IMMER vorne
-          // (wichtig bei vielen Spielen, z.B. Jugend), dann geplant
-          // aufsteigend, beendete ganz hinten.
+          // Sortierung (Nutzer-Wunsch 02.11.): Tage aufsteigend (heute,
+          // morgen, ...), INNERHALB eines Tages LIVE vorne, dann geplant
+          // aufsteigend, beendete hinten.
           const rang = (m) => (m.an && !m.fi) ? 0 : (!m.fi ? 1 : 2);
           // Filter (Nutzer-Wunsch 02.11.): ab HEUTE inklusive - beendete
           // Spiele aelterer Tage fallen raus, heute Beendete bleiben.
@@ -1359,7 +1368,21 @@
               return tag >= heute && (!m.fi || tag === heute) &&
                 ((m.t1r && m.t1r.includes("ASV Dachau")) || (m.t2r && m.t2r.includes("ASV Dachau")));
             })
-            .sort((a, b) => rang(a) - rang(b) || a.date - b.date);
+            .sort((a, b) => {
+              const ta = berlinTag(a.date), tb = berlinTag(b.date);
+              if (ta !== tb) return ta < tb ? -1 : 1;
+              return rang(a) - rang(b) || a.date - b.date;
+            });
+          // Tages-Überschriften (Nutzer-Wunsch 02.11.): "Heute" / "Morgen"
+          // / "So, 08.11." vor dem ersten Spiel jedes Tags.
+          const morgenTag = berlinTag(Date.now() + 24 * 3600000);
+          const tagTitel = (m) => {
+            const tag = berlinTag(m.date);
+            if (tag === heute) return "Heute";
+            if (tag === morgenTag) return "Morgen";
+            return tagDatumFmt.format(new Date(m.date)).replace(".,", ",");
+          };
+          let lastTag = "";
           if (!spiele.length) {
             const leer = document.createElement("div");
             leer.className = "asvcard inaktiv";
@@ -1373,6 +1396,15 @@
             wrap.appendChild(hinweis);
           }
           spiele.forEach((m) => {
+            // Tages-Überschrift, wenn ein neuer Tag beginnt
+            const mTag = berlinTag(m.date);
+            if (mTag !== lastTag) {
+              lastTag = mTag;
+              const kopf = document.createElement("div");
+              kopf.className = "taglabel";
+              kopf.textContent = tagTitel(m);
+              wrap.appendChild(kopf);
+            }
             const t = configForMatch(m);
             const klasse = t ? t.grp : "ASV";
             const live = !!(m.an && !m.fi);
