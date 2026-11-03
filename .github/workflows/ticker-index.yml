@@ -1,5 +1,0 @@
-name: Ticker-Index Update (alt)
-
-# DEAKTIVIERT und veraltet - wird gleich geloescht. Siehe ticker-update.yml.
-on:
-  workflow_dispatch:
