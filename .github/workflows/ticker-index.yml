@@ -23,7 +23,8 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Runner-IP loggen (Geo-Diagnose)
-        run: echo "Runner-IP: $(curl -s --max-time 10 https://api.ipify.org)"
+        run: |
+          echo "Runner-IP: $(curl -s --max-time 10 https://api.ipify.org)"
 
       - name: BVV-Ticker-Backend laden
         run: |
@@ -117,8 +118,6 @@ jobs:
 
           c1 = write_if_changed("ticker-index.json", idx_str)
           c2 = write_if_changed("asv-wettbewerbe.json", wett_str)
-          with open(os.environ.get("GITHUB_OUTPUT", "/dev/null"), "a") as f:
-              f.write("changed=" + ("true" if (c1 or c2) else "false") + "\n")
           print(f"STATS: matches={total} ligen={len(ligen)} asvWettbewerbe={len(wliste)}")
           PYEOF
 
