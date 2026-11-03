@@ -1,14 +1,16 @@
 name: Ticker-Index Update
 
+# DEAKTIVIERT (Standby): BVV-Backend blockt US-Runner-IPs mit 403 (Geo-Regel,
+# verifiziert 03.11.2026 ueber ticker-probe.txt). Nur noch manuell startbar.
+# Wenn BVV die Sperre aufhebt: push-Trigger und/oder schedule unten wieder einkommentieren.
 on:
   workflow_dispatch:
-  push:
-    paths:
-      - ".github/workflows/ticker-update.yml"
-      - "scripts/ticker_update.py"
-  # Zeitplan aktivieren, sobald der Testlauf gruen ist:
+  # push:
+  #   paths:
+  #     - ".github/workflows/ticker-update.yml"
+  #     - "scripts/ticker_update.py"
   # schedule:
-  #   - cron: "*/15 7-19 * * 6,0"
+  #   - cron: "*/15 7-19 * * 6,0"   # Sa/So 8:50-20:00 MEZ
 
 permissions:
   contents: write
