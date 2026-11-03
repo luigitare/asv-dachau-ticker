@@ -330,8 +330,9 @@
     <!-- Heute-Zeile: Spiele des gewaehlten Teams, die heute stattfinden -->
     <div id="heuteRow" style="display:none"></div>
 
-    <!-- ASV-Spiele heute: Aufklappliste ALLER ASV-Spiele des Tages
-         (unabhaengig vom gewaehlten Filter), Knopf im Menü -->
+    <!-- ASV-Spiele ab heute: Aufklappliste ALLER ASV-Spiele ab heute
+         (inkl. heute Beendeter) bis ans Ende des Index-Fensters,
+         unabhaengig vom gewaehlten Filter, Knopf im Menü -->
     <div id="asvHeute" style="display:none"></div>
 
     <div class="teamview" id="teamview"></div>
@@ -360,7 +361,7 @@
         </div>
         <div class="intropunkt" id="introP-heute">
           <span class="ic">🔥</span>
-          <div><b>„alle ASV Spiele heute"</b><span>Alle Dachau-Spiele des Tages auf einen Blick – im Ticker aufrufbar</span></div>
+          <div><b>„Alle ASV-Spiele"</b><span>Alle Dachau-Spiele ab heute auf einen Blick – im Ticker aufrufbar</span></div>
         </div>
         <div class="intropunkt" id="introP-suche">
           <span class="ic">🔍</span>
@@ -851,7 +852,7 @@
       }
 
       // ---------------- Modus-Zeile (Zeile 0 des Menüs) ----------------
-      // Modi: ASV Team, alle ASV Spiele heute, 🔍 Suche, ohne Filter
+      // Modi: ASV Team, Alle ASV-Spiele, 🔍 Suche, ohne Filter
       // (ohne Filter = alle BVV-Spiele heute, ganz rechts - 31.10.).
       const modeRow = document.getElementById("modeRow");
       const teamRowsLabel = document.getElementById("teamRowsLabel");
@@ -931,7 +932,7 @@
         });
         // "Alle ASV Spiele heute" gehoert in die Bereichs-Zeile
         // (Nutzer-Wunsch 31.10.: neben Herren/Damen/Jugend m/w)
-        catRow.appendChild(chip("Alle ASV heute", !!state.asvHeute, () => {
+        catRow.appendChild(chip("Alle ASV-Spiele", !!state.asvHeute, () => {
           state.noFilter = false;
           state.asvHeute = true;
           state.search = false;
@@ -1301,11 +1302,12 @@
         showEntry();
       }
 
-      // ---------------- ASV-Spiele heute (Aufklappliste) ----------------
-      // Der Knopf "🔥 ASV-Spiele heute" klappt unter der Tab-Leiste
-      // eine Liste ALLER ASV-Spiele des Tages auf - unabhaengig vom
-      // gewaehlten Filter. Jede Karte zeigt die Spielklasse + Kategorie
-      // aus der App-Konfiguration (z. B. "Herren 4", "U16") und:
+      // ---------------- ASV-Spiele ab heute (Aufklappliste) ----------------
+      // Der Knopf "Alle ASV-Spiele" klappt unter der Tab-Leiste eine
+      // Liste ALLER ASV-Spiele ab HEUTE auf (inkl. heute beendeter,
+      // sonst nur noch zukuenftige - Nutzer-Wunsch 02.11.) - bis ans
+      // Ende des Index-Fensters (ca. +7 Tage). Jede Karte zeigt die
+      // Spielklasse + Kategorie aus der App-Konfiguration und:
       //  - geplant: weiss mit Uhrzeit, nicht klickbar (keine URL)
       //  - LIVE (Ticker angelegt, fi!=1): rot, pulsierend - Klick
       //    springt zum Mannschaftsfilter und pinnt das Spiel an
@@ -1343,18 +1345,25 @@
         } else {
           const heute = berlinTag(Date.now());
           const zeitFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" });
+          const tagDatumFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", weekday: "short", day: "2-digit", month: "2-digit" });
           // Sortierung (Nutzer-Wunsch 31.10.): LIVE-Spiele IMMER vorne
           // (wichtig bei vielen Spielen, z.B. Jugend), dann geplant
           // aufsteigend, beendete ganz hinten.
           const rang = (m) => (m.an && !m.fi) ? 0 : (!m.fi ? 1 : 2);
+          // Filter (Nutzer-Wunsch 02.11.): ab HEUTE inklusive - beendete
+          // Spiele aelterer Tage fallen raus, heute Beendete bleiben.
+          // berlinTag liefert "tt.mm.jjjj" - lexikographischer Vergleich.
           const spiele = tickerIndex
-            .filter((m) => berlinTag(m.date) === heute &&
-              ((m.t1r && m.t1r.includes("ASV Dachau")) || (m.t2r && m.t2r.includes("ASV Dachau"))))
+            .filter((m) => {
+              const tag = berlinTag(m.date);
+              return tag >= heute && (!m.fi || tag === heute) &&
+                ((m.t1r && m.t1r.includes("ASV Dachau")) || (m.t2r && m.t2r.includes("ASV Dachau")));
+            })
             .sort((a, b) => rang(a) - rang(b) || a.date - b.date);
           if (!spiele.length) {
             const leer = document.createElement("div");
             leer.className = "asvcard inaktiv";
-            leer.textContent = "😄 Heute spielen keine ASV-Mannschaften";
+            leer.textContent = "😄 Keine ASV-Spiele im Zeitraum";
             wrap.appendChild(leer);
           } else {
             const hinweis = document.createElement("div");
@@ -1369,11 +1378,17 @@
             const live = !!(m.an && !m.fi);
             const fertig = !!m.fi;
             const zeit = zeitFmt.format(new Date(m.date));
+            const istHeute = berlinTag(m.date) === heute;
+            // Datum-Anzeige (02.11.): heute nur Uhrzeit, kuenftige
+            // Tage mit Wochentag + Datum (Liste reicht jetzt +7 Tage).
+            const datumText = istHeute
+              ? (zeit === "00:00" ? "–" : zeit)
+              : tagDatumFmt.format(new Date(m.date)).replace(".,", ",") + (zeit === "00:00" ? "" : " · " + zeit);
             const card = document.createElement("button");
             card.className = "asvcard" + (live ? " live" : "") + (fertig ? " done" : "") + (!live && !fertig && !t ? " inaktiv" : "");
             const zeitHtml = live
               ? '<span class="livedot"></span><span class="hc-zeit">LIVE</span>'
-              : '<span class="hc-zeit">📅 ' + (zeit === "00:00" ? "–" : zeit) + '</span>';
+              : '<span class="hc-zeit">📅 ' + datumText + '</span>';
             const ergHtml = fertig
               ? ((m.sp1 !== undefined && m.sp2 !== undefined) ? '<span class="erg">' + m.sp1 + ":" + m.sp2 + '</span>' : "") + '<span class="hc-zeit">✅ fertig</span>'
               : "";
@@ -1650,7 +1665,7 @@
         if (state.noFilter) {
           menuBtnLabel.textContent = "🌐 ohne Filter";
         } else if (state.asvHeute) {
-          menuBtnLabel.textContent = "🔥 ASV-Spiele heute";
+          menuBtnLabel.textContent = "🔥 ASV-Spiele ab heute";
         } else if (state.search) {
           menuBtnLabel.textContent = "🔍 Suche";
         } else if (state.fremd) {
