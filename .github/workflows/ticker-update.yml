@@ -23,10 +23,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Backend laden
+      - name: Backend laden (Probe-Modus)
         run: |
           set -o pipefail
-          echo "Runner-IP: $(curl -s --max-time 10 https://api.ipify.org)"
+          IP=$(curl -s --max-time 10 https://api.ipify.org)
+          echo "Runner-IP: $IP"
           CODE=$(curl -sS --compressed --max-time 180 \
             -H "Origin: https://bvv.sams-ticker.de" \
             -H "Referer: https://bvv.sams-ticker.de/" \
@@ -37,16 +38,26 @@ jobs:
             https://backend.sams-ticker.de/live/indoor/tickers/bvv) || CODE=FAIL
           echo "HTTP-Code: $CODE"
           echo "Groesse: $(stat -c %s ticker-raw.json 2>/dev/null || echo 0) Bytes"
-          if [ "$CODE" != "200" ]; then
-            echo "Backend nicht erreichbar (HTTP $CODE)"
-            head -c 300 ticker-raw.json 2>/dev/null || true
-            exit 1
-          fi
+          echo "code=$CODE" >> "$GITHUB_ENV"
+          echo "runner_ip=$IP" >> "$GITHUB_ENV"
+
+      - name: Probe-Datei committen
+        run: |
+          git config user.name "asv-ticker-bot"
+          git config user.email "actions@github.com"
+          printf 'Zeit: %s\nRunner-IP: %s\nHTTP-Code: %s\nGroesse: %s Bytes\n' \
+            "$(date -u +%Y-%m-%dT%H:%M:%SZ)" "$runner_ip" "$code" \
+            "$(stat -c %s ticker-raw.json 2>/dev/null || echo 0)" > ticker-probe.txt
+          cat ticker-probe.txt
+          git add ticker-probe.txt
+          git diff --cached --quiet || (git commit -m "Ticker-Probe [github-action]" && git push)
 
       - name: Index bauen
+        if: env.code == '200'
         run: python3 scripts/ticker_update.py
 
-      - name: Commit
+      - name: Index committen
+        if: env.code == '200'
         run: |
           git config user.name "asv-ticker-bot"
           git config user.email "actions@github.com"
