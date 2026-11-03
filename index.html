@@ -120,6 +120,10 @@
 
       .filterrow { display: flex; gap: .4rem; flex-wrap: wrap; margin-bottom: .4rem; align-items: center; }
       .filterrow .rowlabel { font-size: .7rem; color: #9ca3af; width: 100%; margin-bottom: -.15rem; }
+      /* Eigene Zeile fuer "Alle ASV-Spiele" ueber den Bereichs-Chips
+         (Nutzer-Wunsch 03.11.): erzwingt den Umbruch in der
+         flex-wrap-Zeile. */
+      .chipzeile { width: 100%; display: flex; flex-wrap: wrap; gap: .4rem; }
       .chip {
         border: 1px solid #d1d5db; background: #fff; border-radius: 999px;
         padding: .3rem .7rem; font-size: .8rem; cursor: pointer;
@@ -924,6 +928,21 @@
       function renderCatRow() {
         const heuteSpiele = asvHeuteSpiele();
         catRow.innerHTML = '<div class="rowlabel">1 · Bereich</div>';
+        // "Alle ASV-Spiele" bekommt ab v44 eine EIGENE Zeile ueber den
+        // Bereichs-Chips (Nutzer-Wunsch 03.11.: 1. Zeile Alle ASV-Spiele,
+        // 2. Zeile Herren/Damen/Jugend m/w).
+        const alleZeile = document.createElement("div");
+        alleZeile.className = "chipzeile";
+        alleZeile.appendChild(chip("Alle ASV-Spiele", !!state.asvHeute, () => {
+          state.noFilter = false;
+          state.asvHeute = true;
+          state.search = false;
+          state.fremd = null;
+          state.tab = "ticker"; // Spielplan/Tabelle-Tabs sind in diesem Modus weg
+          menuOpen = false;
+          renderAll();
+        }, heuteSpiele.length));
+        catRow.appendChild(alleZeile);
         CATS.forEach((c) => {
           catRow.appendChild(chip(c.label, state.cat === c.id && !state.asvHeute, () => {
             state.noFilter = false; // ASV-Auswahl aktiv -> Normalmodus
@@ -939,17 +958,6 @@
             renderAll();
           }, asvHeuteCount(heuteSpiele, (t) => t.cat === c.id)));
         });
-        // "Alle ASV Spiele heute" gehoert in die Bereichs-Zeile
-        // (Nutzer-Wunsch 31.10.: neben Herren/Damen/Jugend m/w)
-        catRow.appendChild(chip("Alle ASV-Spiele", !!state.asvHeute, () => {
-          state.noFilter = false;
-          state.asvHeute = true;
-          state.search = false;
-          state.fremd = null;
-          state.tab = "ticker"; // Spielplan/Tabelle-Tabs sind in diesem Modus weg
-          menuOpen = false;
-          renderAll();
-        }, heuteSpiele.length));
       }
 
       function renderGrpRow() {
