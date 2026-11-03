@@ -1,0 +1,56 @@
+name: Ticker-Index Update
+
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - ".github/workflows/ticker-update.yml"
+      - "scripts/ticker_update.py"
+  # Zeitplan aktivieren, sobald der Testlauf gruen ist:
+  # schedule:
+  #   - cron: "*/15 7-19 * * 6,0"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: ticker-index
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Backend laden
+        run: |
+          set -o pipefail
+          echo "Runner-IP: $(curl -s --max-time 10 https://api.ipify.org)"
+          CODE=$(curl -sS --compressed --max-time 180 \
+            -H "Origin: https://bvv.sams-ticker.de" \
+            -H "Referer: https://bvv.sams-ticker.de/" \
+            -H "Accept: application/json" \
+            -H "User-Agent: Mozilla/5.0 (X11; Linux x86_64)" \
+            -o ticker-raw.json \
+            -w "%{http_code}" \
+            https://backend.sams-ticker.de/live/indoor/tickers/bvv) || CODE=FAIL
+          echo "HTTP-Code: $CODE"
+          echo "Groesse: $(stat -c %s ticker-raw.json 2>/dev/null || echo 0) Bytes"
+          if [ "$CODE" != "200" ]; then
+            echo "Backend nicht erreichbar (HTTP $CODE)"
+            head -c 300 ticker-raw.json 2>/dev/null || true
+            exit 1
+          fi
+
+      - name: Index bauen
+        run: python3 scripts/ticker_update.py
+
+      - name: Commit
+        run: |
+          git config user.name "asv-ticker-bot"
+          git config user.email "actions@github.com"
+          git add ticker-index.json asv-wettbewerbe.json
+          if git diff --cached --quiet; then echo "Keine Aenderungen"; exit 0; fi
+          git commit -m "Ticker-Index aktualisieren [github-action]"
+          git push
