@@ -222,7 +222,7 @@
         display: flex; flex-direction: column; align-items: stretch; gap: .12rem; flex-shrink: 0;
         border: 1px solid #d1d5db; background: #fff; border-radius: 10px;
         padding: .4rem .55rem; font-size: .74rem; cursor: pointer; white-space: normal;
-        min-width: 165px; max-width: 225px;
+        min-width: 180px; max-width: 320px;
       }
       /* 3-Zeilen-Gegner-Karte (v47): Zeile 1 Status+Datum+▶ / Zeile 2 Liga / Zeile 3 Ort+Gegner+Ergebnis */
       .hc-top { display: flex; align-items: center; justify-content: space-between; gap: .3rem; }
@@ -236,10 +236,11 @@
         width: 1.15rem; height: 1.15rem; border-radius: 999px; flex: 0 0 auto;
         background: #1e3a8a; color: #fff; font-size: .55rem; line-height: 1;
       }
-      .hc-ort { font-size: .8rem; }
-      /* Zeile 3: Gegner links, Ergebnis rechts */
+      .hc-vs { color: #6b7280; flex: 0 0 auto; }
+      /* Zeile 3: volle Paarung Heim – Auswaerts (v48), Ergebnis rechts */
       .hc-geit { display: flex; align-items: baseline; gap: .3rem; }
-      .hc-geit .erg { margin-left: auto; }
+      .hc-geit b { font-weight: 600; color: #374151; white-space: normal; min-width: 0; }
+      .hc-geit .erg { margin-left: auto; flex: 0 0 auto; }
       .heutecard:hover { border-color: #2563eb; background: #eff6ff; }
       .heutecard.pinned { border-color: #1e3a8a; background: #bfdbfe; }
       .heutecard .hc-zeit { font-weight: 700; color: #111827; font-size: .72rem; }
@@ -1296,15 +1297,13 @@
           const ergFertig = (m.fi && m.sp1 !== undefined && m.sp2 !== undefined) ? m.sp1 + ":" + m.sp2 : "";
           const card = document.createElement("button");
           card.className = "heutecard" + (live ? " live" : "") + (fertig ? " done" : "") + (pinAktiv ? " pinned" : "") + (!live && !fertig ? " inaktiv" : "");
-          // Karten-Design (v47, Nutzer-Wunsch 06.11.): 3-Zeilen-Gegner-
-          // Karte im GEGNER-Prinzip – der eigene Teamname entfaellt
-          // (Kontext ist die gewaehlte Mannschaft):
+          // Karten-Design (v48, Nutzer-Wunsch 06.11.): 3-Zeilen-Karte
+          // mit VOLLER PAARUNG statt Gegner-Prinzip:
           //   Zeile 1: Status-Icon (LIVE ausgeschrieben rot / ✅ / 📅)
           //            + Datum·Uhrzeit + ▶ bei klickbaren Spielen
           //   Zeile 2: Liga-Name (schwarz, gut lesbar)
-          //   Zeile 3: 🏠/✈️ Gegner + Satz-Ergebnis (rechts)
-          const heim = tid ? (m.t1i === tid) : (normTeam(m.t1r) === nName);
-          const gegner = heim ? m.t2r : m.t1r;
+          //   Zeile 3: Heim – Auswaerts (Spielfeld-Reihenfolge, ASV
+          //            blau) + Satz-Ergebnis (rechts)
           const liga = ligaName(m.series);
           const status = live
             ? '<span class="hc-status live"><span class="livedot"></span>LIVE</span>'
@@ -1318,7 +1317,7 @@
               ((live || fertig) ? '<span class="hc-go" aria-hidden="true">▶</span>' : "") +
             '</span>' +
             (liga ? '<span class="hcliga">' + escHtml(liga) + '</span>' : "") +
-            '<span class="hc-geit"><span class="hc-ort">' + (heim ? "🏠" : "✈️") + '</span> <b' + (gegner && gegner.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(gegner) + '</b>' + (ergFertig ? '<span class="erg">' + ergFertig + '</span>' : "") + '</span>';
+            '<span class="hc-geit"><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b><span class="hc-vs">–</span><b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b>' + (ergFertig ? '<span class="erg">' + ergFertig + '</span>' : "") + '</span>';
           if (live || fertig) {
             card.title = live
               ? "Dieses Spiel läuft gerade – Live-Ticker öffnen (erneut antippen = Pin entfernen)"
