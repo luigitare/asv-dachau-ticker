@@ -69,9 +69,9 @@
       .taglabel:first-child { margin-top: 0; }
       /* Liga-/Wettbewerbs-Name auf den Spiel-Karten (06.11.): dezente
          kleine Zeile, bricht um, wenn der Name lang ist. */
-      /* Liga-Name auf den Spiel-Karten (v47): normal schwarz und gut
-         lesbar statt klein/hellgrau, bricht um, wenn der Name lang ist. */
-      .hcliga { font-size: .74rem; color: #111827; font-weight: 600; white-space: normal; min-width: 0; }
+      /* Liga-Name auf den Spiel-Karten (v49): dezent grau als Kontext-
+         Zeile – die Paarung ist das Entscheidende und steht fett darunter. */
+      .hcliga { font-size: .7rem; color: #6b7280; font-weight: 500; white-space: normal; min-width: 0; }
       /* Wettbewerbs-Suche: lange Liga-Namen duerfen in der Karte umbrechen */
       .suchcards .asvcard b { white-space: normal; }
       .suchcards { display: flex; flex-direction: column; gap: .4rem; }
@@ -237,10 +237,13 @@
         background: #1e3a8a; color: #fff; font-size: .55rem; line-height: 1;
       }
       .hc-vs { color: #6b7280; flex: 0 0 auto; }
-      /* Zeile 3: volle Paarung Heim – Auswaerts (v48), Ergebnis rechts */
+      /* Zeile 3: volle Paarung Heim – Auswaerts (v48), Ergebnis rechts.
+         v49: Paarung FETT + minimal groesser – Hierarchie: Paarung
+         springt ins Auge, Liga oben dezent, Datum schwarz normal. */
       .hc-geit { display: flex; align-items: baseline; gap: .3rem; }
-      .hc-geit b { font-weight: 600; color: #374151; white-space: normal; min-width: 0; }
-      .hc-geit .erg { margin-left: auto; flex: 0 0 auto; }
+      .hc-geit b { font-weight: 800; color: #111827; font-size: .84rem; white-space: normal; min-width: 0; }
+      .hc-geit b.asv { color: #1e3a8a; }
+      .hc-geit .erg { margin-left: auto; flex: 0 0 auto; font-weight: 800; }
       .heutecard:hover { border-color: #2563eb; background: #eff6ff; }
       .heutecard.pinned { border-color: #1e3a8a; background: #bfdbfe; }
       .heutecard .hc-zeit { font-weight: 700; color: #111827; font-size: .72rem; }
@@ -1976,8 +1979,13 @@
         menuBtn.classList.toggle("open", menuOpen);
         menuPanel.classList.toggle("open", menuOpen);
         // Reiter (Spielplan/Tabelle/Ticker) nur im Team-Modus – im
-        // ASV-heute-Modus gibt es bewusst nur den Ticker ohne Reiter
-        tabRow.style.display = ((state.entry !== null || !!state.fremd) && !state.noFilter && !state.asvHeute && !state.wettb && !state.search) ? "flex" : "none";
+        // ASV-heute-Modus gibt es bewusst nur den Ticker ohne Reiter.
+        // Bei FREMDEN Mannschaften (und externen Eintraegen) gibt es
+        // nur den Ticker – der einzelne Reiter-Button ist redundant,
+        // deshalb Zeile komplett weg (v49): iframe rueckt nach oben.
+        const curE = currentEntry();
+        const nurTicker = !!state.fremd || (curE && curE.externalUrl);
+        tabRow.style.display = ((state.entry !== null || !!state.fremd) && !nurTicker && !state.noFilter && !state.asvHeute && !state.wettb && !state.search) ? "flex" : "none";
         // Modus-Zeile immer, Mannschafts-Zeilen nur im Team-Modus
         renderModeRow();
         renderFavoritenRow();
