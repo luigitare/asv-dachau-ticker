@@ -2,15 +2,29 @@
   "stand": "automatisch generiert (Home Assistant)",
   "wettbewerbe": [
     {
-      "wettbewerb": "12ad8590-9ed2-4e10-9356-9c296bed5568",
-      "liga": "Regionalliga Süd-Ost Männer",
-      "spiele": 1,
+      "wettbewerb": "00572b76-b0a6-4730-9b69-965ef2c22335",
+      "liga": "Obb - Bezirksliga West Frauen",
+      "spiele": 2,
       "asvTeams": [
         "ASV Dachau III"
       ],
       "gegnerBeispiele": [
         "ASV Dachau III",
-        "TSV Herrsching II"
+        "TUSC Obermenzing",
+        "VSG München/Eiselfing/Unterhaching II"
+      ]
+    },
+    {
+      "wettbewerb": "12ad8590-9ed2-4e10-9356-9c296bed5568",
+      "liga": "Regionalliga Süd-Ost Männer",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau III"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau III",
+        "TSV Herrsching II",
+        "MTV Rosenheim"
       ]
     },
     {
@@ -26,6 +40,44 @@
       ]
     },
     {
+      "wettbewerb": "aea4d3ff-56de-403a-b67d-2fba4bf83fb8",
+      "liga": "Obb - Bezirksliga West Männer",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau V"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau V",
+        "SV Lohhof II",
+        "SC Vierkirchen"
+      ]
+    },
+    {
+      "wettbewerb": "b23cdb6e-d8b2-4c4e-ba3d-f5fbfda2c7fe",
+      "liga": "Obb - Kreisliga 2 Frauen",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau V"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau V",
+        "TSV Neufahrn",
+        "SV Haimhausen"
+      ]
+    },
+    {
+      "wettbewerb": "c6bfb1ea-ab19-43cc-b864-ae48865c3c22",
+      "liga": "Landesliga Süd-West Frauen",
+      "spiele": 1,
+      "asvTeams": [
+        "ASV Dachau II"
+      ],
+      "gegnerBeispiele": [
+        "SV Esting",
+        "ASV Dachau II"
+      ]
+    },
+    {
       "wettbewerb": "d14a83b4-3109-4be5-835b-e56282234a5b",
       "liga": "Obb - Bezirksklasse 1 Frauen",
       "spiele": 1,
@@ -35,6 +87,19 @@
       "gegnerBeispiele": [
         "ASV Dachau IV",
         "SG Amper Volleys II"
+      ]
+    },
+    {
+      "wettbewerb": "e4d55a45-caac-4452-9aee-9c3491273b78",
+      "liga": "Obb - Kreisliga 3 Männer",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau VII"
+      ],
+      "gegnerBeispiele": [
+        "TSV Milbertshofen",
+        "ASV Dachau VII",
+        "TUSC Obermenzing II"
       ]
     }
   ]
