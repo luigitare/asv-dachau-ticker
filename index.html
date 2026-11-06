@@ -533,12 +533,12 @@
       // Beim Start: nichts ausgewählt. Falls gespeichert, wird die
       // letzte Auswahl aus dem localStorage wiederhergestellt
       // (überlebt Tab schließen & Browser-Neustart, ohne Cookie-Alarm).
-      let state = { cat: null, grp: null, entry: null, noFilter: false, asvHeute: false, search: false, fremd: null, lastCat: null, lastGrpByCat: {}, lastEntryByGrp: {} };
+      let state = { cat: null, grp: null, entry: null, noFilter: false, asvHeute: false, search: false, fremd: null, wettb: null, lastCat: null, lastGrpByCat: {}, lastEntryByGrp: {} };
       const STORE_KEY = "asv-dachau-auswahl-v1";
       try {
         const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
         if (saved && typeof saved === "object") state = Object.assign(
-          { cat: null, grp: null, entry: null, noFilter: false, asvHeute: false, search: false, fremd: null, lastCat: null, lastGrpByCat: {}, lastEntryByGrp: {} }, saved
+          { cat: null, grp: null, entry: null, noFilter: false, asvHeute: false, search: false, fremd: null, wettb: null, lastCat: null, lastGrpByCat: {}, lastEntryByGrp: {} }, saved
         );
       } catch (e) { /* ignorieren */ }
       // Such-Modus nie als Startzustand wiederherstellen (Eingabefeld
@@ -711,6 +711,7 @@
         state.asvHeute = false;
         state.search = false;
         state.fremd = null;
+        state.wettb = null;
         // Letzten Bereich + Mannschaft vorwahlen wie beim "ASV Team"-Chip
         if (state.cat === null && state.lastCat) {
           state.cat = state.lastCat;
@@ -730,6 +731,7 @@
         state.asvHeute = true;
         state.search = false;
         state.fremd = null;
+        state.wettb = null;
         state.tab = "ticker";
         menuOpen = false;
         renderAll();
@@ -740,6 +742,7 @@
         state.noFilter = false;
         state.asvHeute = false;
         state.search = true;
+        state.wettb = null;
         suchFokus = true;
         menuOpen = true;
         renderAll();
@@ -751,6 +754,7 @@
         state.asvHeute = false;
         state.search = false;
         state.fremd = null;
+        state.wettb = null;
         state.cat = null; state.grp = null; state.entry = null;
         menuOpen = false;
         renderAll();
@@ -876,11 +880,12 @@
       const teamRowsLabel = document.getElementById("teamRowsLabel");
       function renderModeRow() {
         modeRow.innerHTML = "";
-        modeRow.appendChild(chip("ASV Team", !state.noFilter && !state.asvHeute && !state.search && !state.fremd, () => {
+        modeRow.appendChild(chip("ASV Team", !state.noFilter && !state.asvHeute && !state.search && !state.fremd && !state.wettb, () => {
           state.noFilter = false;
           state.asvHeute = false;
           state.search = false;
           state.fremd = null; // fremde Mannschaft abwählen
+          state.wettb = null; // Wettbewerb-Ansicht verlassen
           // Letzten Bereich + Mannschaft direkt wieder vorwählen
           // (Nutzer-Wunsch 31.10.): "ASV Team" zeigt sofort die letzte
           // Auswahl, statt dass man erst Herren/Damen/Jugend anklicken
@@ -896,9 +901,10 @@
           }
           renderAll(); // Menü bleibt offen -> Mannschaft wie gewohnt wählen
         }));
-        modeRow.appendChild(chip("🔍 Suche", !!(state.search || state.fremd), () => {
+        modeRow.appendChild(chip("🔍 Suche", !!(state.search || state.fremd || state.wettb), () => {
           state.noFilter = false;
           state.asvHeute = false;
+          state.wettb = null;
           state.search = true;
           suchFokus = true; // Suchfeld direkt fokussieren (Tastatur öffnet sich)
           menuOpen = true; // Suche läuft IM MENÜ: offen lassen
@@ -909,6 +915,7 @@
           state.asvHeute = false;
           state.search = false;
           state.fremd = null;
+          state.wettb = null;
           state.cat = null; state.grp = null; state.entry = null;
           menuOpen = false;
           renderAll();
@@ -943,6 +950,7 @@
           state.asvHeute = true;
           state.search = false;
           state.fremd = null;
+          state.wettb = null;
           state.tab = "ticker"; // Spielplan/Tabelle-Tabs sind in diesem Modus weg
           menuOpen = false;
           renderAll();
@@ -954,6 +962,7 @@
             state.asvHeute = false;
             state.search = false;
             state.fremd = null;
+            state.wettb = null;
             state.cat = c.id;
             state.lastCat = c.id; // fuer "ASV Team"-Klick: letzten Bereich vorwahlen
             const g = state.lastGrpByCat[c.id];
@@ -973,6 +982,7 @@
           grpRow.appendChild(chip(g, state.grp === g, () => {
             state.grp = g;
             state.fremd = null;
+            state.wettb = null;
             rememberGrp(state.cat, g);
             state.entry = state.lastEntryByGrp[state.cat + "|" + g] ?? null;
             autoAdvance(state.cat);
@@ -990,6 +1000,7 @@
           entryRow.appendChild(chip(label, state.entry === e.idx, () => {
             state.entry = e.idx;
             state.fremd = null;
+            state.wettb = null;
             rememberEntry(state.cat, state.grp, e.idx);
             renderAll(); // Menü bleibt offen (Schließen nur explizit)
           }, heuteSpiele.filter((m) => configForMatch(m) === e).length));
@@ -1072,6 +1083,9 @@
         // "Alle ASV heute": zunaechst GAR kein iframe (Nutzer-Wunsch
         // 31.10.) - der Ticker kommt erst mit der Spiel-Auswahl.
         if (state.asvHeute) return;
+        // Wettbewerb-Ansicht: gleiche Logik - kein iframe, erst mit
+        // der Spiel-Auswahl (Klick wechselt auf die Mannschaft).
+        if (state.wettb) return;
         if (state.noFilter) {
           noFilterView.classList.add("active");
           const nfSrc = nfTargetSrc();
@@ -1163,7 +1177,7 @@
           ph.innerHTML = '👋 Tippe oben auf <b>☰ Menü</b> und wähle deine Mannschaft – Live-Ticker, Spielplan und Tabelle erscheinen sofort.';
           teamview.appendChild(ph);
         }
-        ph.style.display = (state.entry === null && !state.fremd && !state.noFilter && !state.asvHeute && !state.search) ? "block" : "none";
+        ph.style.display = (state.entry === null && !state.fremd && !state.noFilter && !state.asvHeute && !state.wettb && !state.search) ? "block" : "none";
       }
 
       // ---------------- Heute-Zeile unter der Tab-Leiste ----------------
@@ -1214,7 +1228,7 @@
       function renderHeuteRow() {
         heuteRow.innerHTML = "";
         heuteRow.style.display = "none";
-        if ((state.entry === null && !state.fremd) || state.noFilter || state.asvHeute || state.search) return;
+        if ((state.entry === null && !state.fremd) || state.noFilter || state.asvHeute || state.wettb || state.search) return;
         if (!tickerIndex || !tickerIndex.length) return;
         const fr = state.fremd;
         const t = currentEntry(); // fremd: gebautes DOM-Element, sonst CONFIG-Eintrag
@@ -1453,6 +1467,7 @@
               card.onclick = () => {
                 state.noFilter = false;
                 state.asvHeute = false;
+                state.wettb = null;
                 state.fremd = null;
                 state.cat = t.cat; state.grp = t.grp; state.entry = t.idx;
                 rememberEntry(t.cat, t.grp, t.idx);
@@ -1482,6 +1497,154 @@
         asvHeuteRow.style.display = "block";
       }
 
+      // ---------------- Wettbewerb-Ansicht (06.11., Nutzer-Wunsch) ----------------
+      // Antippen einer Wettbewerbs-Karte in der Suche oeffnet DIESE
+      // Uebersicht: ALLE Spiele des Wettbewerbs ab heute (inkl. heute
+      // beendeter) in der Hauptansicht - exakt wie die "Alle ASV-Spiele"-
+      // Liste (Tages-Labels, LIVE vorne, gleiche Karten-Logik):
+      //  - ASV-Spiel: Klick = Mannschaftsfilter + Pin (live/beendet)
+      //    bzw. nur Mannschaftsansicht (geplant)
+      //  - Fremdes Spiel: Klick waehlt die (Heim-)Mannschaft wie ein
+      //    Such-Treffer und pinnt das Spiel an (live/beendet)
+      function wettbWaehlen(w) {
+        // Auch in "Zuletzt gesucht" merken (Nutzer-Wunsch 06.11.):
+        // Wettbewerbe tauchen dort mit 🏆 auf, TeamId leer.
+        merkFremd({ name: w.name, klasse: "", series: w.series, teamId: "", liga: w.name, wettb: true });
+        state.noFilter = false;
+        state.asvHeute = false;
+        state.search = false;
+        state.fremd = null;
+        state.wettb = { series: w.series, name: w.name };
+        state.cat = null; state.grp = null; state.entry = null;
+        state.tab = "ticker";
+        menuOpen = false;
+        saveState();
+        renderAll();
+      }
+      function renderWettbewerbRow() {
+        if (!state.wettb) return;
+        asvHeuteRow.innerHTML = "";
+        asvHeuteRow.style.display = "block";
+        const wrap = document.createElement("div");
+        wrap.className = "asvheute";
+        const wname = ligaName(state.wettb.series) || state.wettb.name || "Wettbewerb";
+        const kopf = document.createElement("div");
+        kopf.className = "taglabel";
+        kopf.textContent = "🏆 " + wname;
+        wrap.appendChild(kopf);
+        if (!tickerIndex || !tickerIndex.length) {
+          const warten = document.createElement("div");
+          warten.className = "asvcard inaktiv";
+          warten.textContent = "⏳ Spiele werden geladen …";
+          wrap.appendChild(warten);
+        } else {
+          const heute = berlinTag(Date.now());
+          const zeitFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" });
+          const tagDatumFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", weekday: "short", day: "2-digit", month: "2-digit" });
+          const morgenTag = berlinTag(Date.now() + 24 * 3600000);
+          const rang = (m) => (m.an && !m.fi) ? 0 : (!m.fi ? 1 : 2);
+          // Filter wie ASV-Spiele-Liste: ab heute (heute Beendete bleiben)
+          const spiele = tickerIndex
+            .filter((m) => m.series === state.wettb.series)
+            .filter((m) => { const tag = berlinTag(m.date); return tag >= heute && (!m.fi || tag === heute); })
+            .sort((a, b) => {
+              const ta = berlinTag(a.date), tb = berlinTag(b.date);
+              if (ta !== tb) return ta < tb ? -1 : 1;
+              return rang(a) - rang(b) || a.date - b.date;
+            });
+          if (!spiele.length) {
+            const leer = document.createElement("div");
+            leer.className = "asvcard inaktiv";
+            leer.textContent = "😄 Keine Spiele dieses Wettbewerbs im Zeitraum";
+            wrap.appendChild(leer);
+          } else {
+            const hinweis = document.createElement("div");
+            hinweis.className = "suchhint";
+            hinweis.style.margin = "0 0 .3rem";
+            hinweis.textContent = "ℹ️ Live- und beendete Spiele öffnen den Ticker des Spiels – geplante führen zur Mannschaftsansicht.";
+            wrap.appendChild(hinweis);
+          }
+          let lastTag = "";
+          const tagTitel = (m) => {
+            const tag = berlinTag(m.date);
+            if (tag === heute) return "Heute";
+            if (tag === morgenTag) return "Morgen";
+            return tagDatumFmt.format(new Date(m.date)).replace(".,", ",");
+          };
+          spiele.forEach((m) => {
+            const mTag = berlinTag(m.date);
+            if (mTag !== lastTag) {
+              lastTag = mTag;
+              const kopf2 = document.createElement("div");
+              kopf2.className = "taglabel";
+              kopf2.textContent = tagTitel(m);
+              wrap.appendChild(kopf2);
+            }
+            const t = configForMatch(m);
+            const live = !!(m.an && !m.fi);
+            const fertig = !!m.fi;
+            const zeit = zeitFmt.format(new Date(m.date));
+            const istHeute = mTag === heute;
+            const datumText = istHeute
+              ? (zeit === "00:00" ? "–" : zeit)
+              : tagDatumFmt.format(new Date(m.date)).replace(".,", ",") + (zeit === "00:00" ? "" : " · " + zeit);
+            const card = document.createElement("button");
+            card.className = "asvcard" + (live ? " live" : "") + (fertig ? " done" : "") + (!live && !fertig && !t ? " inaktiv" : "");
+            const zeitHtml = live
+              ? '<span class="livedot"></span><span class="hc-zeit">LIVE</span>'
+              : '<span class="hc-zeit">📅 ' + datumText + '</span>';
+            const ergHtml = fertig
+              ? ((m.sp1 !== undefined && m.sp2 !== undefined) ? '<span class="erg">' + m.sp1 + ":" + m.sp2 + '</span>' : "") + '<span class="hc-zeit">✅ fertig</span>'
+              : "";
+            const paarung =
+              '<span><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b></span>';
+            card.innerHTML = zeitHtml + paarung + ergHtml;
+            const u = "https://bvv.sams-ticker.de/detail/" + m.id;
+            if (t) {
+              // ASV-Spiel: identische Logik wie ASV-Spiele-Liste
+              card.onclick = () => {
+                state.noFilter = false;
+                state.asvHeute = false;
+                state.wettb = null;
+                state.fremd = null;
+                state.cat = t.cat; state.grp = t.grp; state.entry = t.idx;
+                rememberEntry(t.cat, t.grp, t.idx);
+                state.tab = "ticker";
+                saveState();
+                if (!live && !fertig) {
+                  menuOpen = false;
+                  renderAll();
+                  return;
+                }
+                if (t.el && pinOf(t.idx) === u && t.el._pinDel) t.el._pinDel();
+                else if (t.el && t.el._pinTo) t.el._pinTo(u);
+                renderAll();
+              };
+            } else if (live || fertig) {
+              card.title = "Live-Ticker dieses Spiels öffnen (via Heim-Mannschaft)";
+              card.onclick = () => {
+                // Fremdes live/beendetes Spiel: Heim-Mannschaft waehlen
+                // (wie ein Such-Treffer) und das Spiel anpinnen
+                const f = { name: m.t1r, klasse: katFromLiga(m.series), series: m.series, teamId: m.t1i || "", liga: ligaName(m.series) };
+                state.wettb = null;
+                fremdWaehlen(f);
+                const el = currentEntry();
+                if (el && el._pinTo) el._pinTo(u);
+                renderAll();
+              };
+            } else {
+              card.title = "Geplant: zur Mannschaftsansicht wechseln";
+              card.onclick = () => {
+                state.wettb = null;
+                fremdWaehlen({ name: m.t1r, klasse: katFromLiga(m.series), series: m.series, teamId: m.t1i || "", liga: ligaName(m.series) });
+              };
+            }
+            wrap.appendChild(card);
+          });
+        }
+        asvHeuteRow.appendChild(wrap);
+      }
+
       // ---------------- Team-Suche (fremde Vereine & eigene) ----------------
       // Modus "🔍 Suche": Freitext ueber ALLE Spiele des Ticker-Index
       // (Zeitfenster ca. ±7 Tage). Treffer stehen IM MENÜ und sind NUR
@@ -1492,8 +1655,6 @@
       const sucheRow = document.getElementById("sucheRow");
       let suchText = "";
       let suchFokus = false;
-      // Auf/zu-Zustand der Wettbewerbs-Karten in der Suche (06.11.)
-      let offeneLigen = new Set();
       // Kategorie (klasse) aus dem Liga-Namen ableiten (Nutzer-Wunsch):
       // "Männer" -> Herren, "Frauen" -> Damen, "U16/U18/… männlich/
       // weiblich" -> Jugend m/w U16/U18. ASV-Teams zeigen weiter ihre
@@ -1544,17 +1705,25 @@
         try { localStorage.setItem(FAV_KEY, JSON.stringify(fremdLast)); } catch (e) { }
       }
       function renderFavoritenRow() {
-        // Erscheint nur, wenn der Such-Modus aktiv ist (state.search)
-        const zeig = !!state.search && fremdLast.length > 0;
+        // Erscheint im Such-Modus UND in der Wettbewerb-Ansicht (06.11.)
+        const zeig = !!(state.search || state.wettb) && fremdLast.length > 0;
         favLabel.style.display = zeig ? "" : "none";
         favRow.style.display = zeig ? "" : "none";
         favLabel.textContent = "🕘 Zuletzt gesucht";
         if (!zeig) return;
         favRow.innerHTML = "";
         fremdLast.forEach((f) => {
-          const aktiv = !!(state.fremd && state.fremd.series === f.series && state.fremd.teamId === f.teamId);
-          favRow.appendChild(chip(f.name + (f.klasse ? " · " + f.klasse : ""), aktiv, () => {
-            fremdWaehlen(f); // aktualisiert auch die Reihenfolge (zuletzt vorne)
+          // Wettbewerbs-Eintraege (06.11.): 🏆-Chip, Klick oeffnet die
+          // Wettbewerb-Übersicht statt einer Mannschaft.
+          const aktiv = f.wettb
+            ? !!(state.wettb && state.wettb.series === f.series)
+            : !!(state.fremd && state.fremd.series === f.series && state.fremd.teamId === f.teamId);
+          const label = f.wettb
+            ? "🏆 " + f.name
+            : f.name + (f.klasse ? " · " + f.klasse : "");
+          favRow.appendChild(chip(label, aktiv, () => {
+            if (f.wettb) wettbWaehlen({ series: f.series, name: f.name });
+            else fremdWaehlen(f); // aktualisiert auch die Reihenfolge (zuletzt vorne)
           }));
         });
       }
@@ -1565,6 +1734,7 @@
         state.asvHeute = false;
         state.search = false;
         state.fremd = f;
+        state.wettb = null;
         state.cat = null; state.grp = null; state.entry = null;
         state.tab = "ticker";
         menuOpen = false;
@@ -1585,11 +1755,23 @@
           fussEl.textContent = "Bitte mindestens 3 Zeichen eingeben – z. B. „Mauerstetten“, „Dachau“ oder „Bayernpokal“.";
           return;
         }
+        // Wettbewerbs-Suche ueber ALLE Spiele (06.11.-Fix: VOR dem
+        // Team-Frueh-Return gebaut – vorher verschwanden reine
+        // Wettbewerbs-Treffer wie „bayernp“, sobald kein TEAMname
+        // mehr passte, weil die Funktion vorher abbrach).
+        const wettb = new Map(); // seriesId -> { name, ms }
+        tickerIndex.forEach((m) => {
+          const ln = ligaName(m.series);
+          if (ln && normTeam(ln).includes(norm)) {
+            if (!wettb.has(m.series)) wettb.set(m.series, { name: ln, ms: [] });
+            wettb.get(m.series).ms.push(m);
+          }
+        });
         const spiele = tickerIndex
           .filter((m) => (m.t1 && m.t1.includes(norm)) || (m.t2 && m.t2.includes(norm)))
           .sort((a, b) => a.date - b.date);
-        if (!spiele.length) {
-          fussEl.textContent = "Keine Treffer im Zeitfenster (ca. ±7 Tage). Tipp: nur den Vereinsnamen ohne Zusatz wie „II“ probieren.";
+        if (!spiele.length && !wettb.size) {
+          fussEl.textContent = "Keine Treffer im Zeitfenster (ca. ±7 Tage). Tipp: Vereins-, Team- oder Wettbewerbsname (z. B. „Bayernpokal“).";
           return;
         }
         // Nach MANNSCHAFT gruppieren - Schluessel ist die Team-UUID
@@ -1611,20 +1793,9 @@
             teams.get(k).ms.push(m);
           }
         });
-        // Zusaetzlich nach WETTBEWERB suchen (Nutzer-Wunsch 06.11.):
-        // Der Suchbegriff darf auch im Liga-/Pokalnamen stecken, z. B.
-        // "Bayernpokal". Treffer werden als eigene Karten unter den
-        // Mannschaften gruppiert; Antippen klappt die Spiele auf.
-        const wettb = new Map(); // seriesId -> { name, ms }
-        tickerIndex.forEach((m) => {
-          const ln = ligaName(m.series);
-          if (ln && normTeam(ln).includes(norm)) {
-            if (!wettb.has(m.series)) wettb.set(m.series, { name: ln, ms: [] });
-            wettb.get(m.series).ms.push(m);
-          }
-        });
         // Sortierung: Mannschaften mit LIVE-Spiel zuerst, danach alphabetisch
-        const sortiert = [...teams.entries()].sort((a, b) => {          const liveA = a[1].ms.some((m) => m.an && !m.fi) ? 0 : 1;
+        const sortiert = [...teams.entries()].sort((a, b) => {
+          const liveA = a[1].ms.some((m) => m.an && !m.fi) ? 0 : 1;
           const liveB = b[1].ms.some((m) => m.an && !m.fi) ? 0 : 1;
           if (liveA !== liveB) return liveA - liveB;
           return a[1].name.localeCompare(b[1].name, "de", { numeric: true });
@@ -1667,6 +1838,7 @@
               state.asvHeute = false;
               state.search = false;
               state.fremd = null;
+              state.wettb = null;
               state.cat = t.cat; state.grp = t.grp; state.entry = t.idx;
               rememberEntry(t.cat, t.grp, t.idx);
               state.tab = "ticker";
@@ -1686,19 +1858,15 @@
           };
           resEl.appendChild(head);
         });
-        // Wettbewerbs-Treffer (Nutzer-Wunsch 06.11.): eine Karte pro
-        // Wettbewerb, Antippen klappt die Spiele auf/zu. Die Spiele
-        // sind reine Info-Zeilen (LIVE vorne, dann geplant aufsteigend,
-        // beendete hinten) - der Live-Ticker eines Spiels ist ueber die
-        // Mannschafts-Karten erreichbar.
+        // Wettbewerbs-Treffer (Nutzer-Wunsch 06.11., 2. Runde): eine Karte
+        // pro Wettbewerb. Antippen oeffnet die Uebersicht ALLER Spiele
+        // dieses Wettbewerbs in der HAUPTANSICHT – gleiche Karten-Logik
+        // wie bei „Alle ASV-Spiele“ (Tages-Labels, LIVE vorne, Pin).
         if (wettb.size) {
           const ligalab = document.createElement("div");
           ligalab.className = "rowlabel2";
           ligalab.textContent = "Wettbewerbe";
           resEl.appendChild(ligalab);
-          const zeitFmt2 = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" });
-          const tagFmt2 = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", weekday: "short", day: "2-digit", month: "2-digit" });
-          const heute2 = berlinTag(Date.now());
           const wSort = [...wettb.entries()].sort((a, b) => {
             const liveA = a[1].ms.some((m) => m.an && !m.fi) ? 0 : 1;
             const liveB = b[1].ms.some((m) => m.an && !m.fi) ? 0 : 1;
@@ -1707,7 +1875,6 @@
           });
           wSort.slice(0, 20).forEach(([sid, w]) => {
             const wLive = w.ms.some((m) => m.an && !m.fi);
-            const offen = offeneLigen.has(sid);
             const head = document.createElement("button");
             head.className = "asvcard" + (wLive ? " live" : "");
             head.innerHTML =
@@ -1715,44 +1882,22 @@
               + (wLive ? '<span class="livedot"></span><span class="hc-zeit">LIVE</span>' : "")
               + '<b>' + escHtml(w.name) + '</b>'
               + '<span class="count">· ' + w.ms.length + (w.ms.length === 1 ? " Spiel" : " Spiele") + '</span>'
-              + '<span class="chev">' + (offen ? "▼" : "▶") + '</span>';
-            head.title = "Spiele dieses Wettbewerbs anzeigen";
-            head.onclick = () => {
-              if (offeneLigen.has(sid)) offeneLigen.delete(sid);
-              else offeneLigen.add(sid);
-              updateSuchErgebnisse();
-            };
+              + '<span class="chev">▶</span>';
+            head.title = "Wettbewerb öffnen: Spiel-Übersicht wie bei „Alle ASV-Spiele“";
+            head.onclick = () => wettbWaehlen({ series: sid, name: w.name });
             resEl.appendChild(head);
-            if (offen) {
-              const wrang = (m) => (m.an && !m.fi) ? 0 : (!m.fi ? 1 : 2);
-              w.ms.slice().sort((a, b) => wrang(a) - wrang(b) || a.date - b.date).forEach((m) => {
-                const mLive = !!(m.an && !m.fi);
-                const fertig = !!m.fi;
-                const zeit2 = zeitFmt2.format(new Date(m.date));
-                const istHeute2 = berlinTag(m.date) === heute2;
-                const datumText2 = istHeute2 ? "heute" : tagFmt2.format(new Date(m.date)).replace(".,", ",");
-                const status2 = mLive
-                  ? '<span class="livedot"></span><span class="hc-zeit">LIVE</span>'
-                  : fertig
-                    ? '<span class="hc-zeit">✅ ' + ((m.sp1 !== undefined && m.sp2 !== undefined) ? m.sp1 + ":" + m.sp2 + " · " : "") + "fertig</span>"
-                    : '<span class="hc-zeit">📅 ' + datumText2 + (zeit2 === "00:00" ? "" : " · " + zeit2) + '</span>';
-                const paarung2 =
-                  '<span><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : '') + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : '') + '>' + escHtml(m.t2r) + '</b></span>';
-                const row = document.createElement("div");
-                row.className = "asvcard inaktiv";
-                row.innerHTML = status2 + paarung2;
-                row.title = "Info-Zeile – Live-Ticker des Spiels über die Mannschaftskarte erreichbar";
-                resEl.appendChild(row);
-              });
-            }
           });
         }
         const tmCount = Math.min(sortiert.length, 50);
-        fussEl.textContent = tmCount + (tmCount === 1 ? " Mannschaft" : " Mannschaften")
-          + (sortiert.length > 50 ? " (von " + sortiert.length + " – bitte genauer suchen)" : "")
-          + (wettb.size ? " · " + wettb.size + (wettb.size === 1 ? " Wettbewerb" : " Wettbewerbe") : "")
-          + " · " + spiele.length + (spiele.length === 1 ? " Spiel" : " Spiele")
-          + " · Zeitfenster: ca. 7 Tage zurück bis 7 Tage voraus";
+        const wCount = wettb.size;
+        fussEl.textContent =
+          (tmCount ? tmCount + (tmCount === 1 ? " Mannschaft" : " Mannschaften")
+            + (sortiert.length > 50 ? " (von " + sortiert.length + " – bitte genauer suchen)" : "")
+            + (tmCount && wCount ? " · " : "")
+            + (tmCount ? spiele.length + (spiele.length === 1 ? " Spiel" : " Spiele") + " · " : "")
+            : "")
+          + (wCount ? wCount + (wCount === 1 ? " Wettbewerb" : " Wettbewerbe") + " · " : "")
+          + "Zeitfenster: ca. 7 Tage zurück bis 7 Tage voraus";
       }
       function renderSucheRow() {
         sucheRow.innerHTML = "";
@@ -1804,6 +1949,8 @@
           menuBtnLabel.textContent = "🌐 ohne Filter";
         } else if (state.asvHeute) {
           menuBtnLabel.textContent = "🔥 ASV-Spiele ab heute";
+        } else if (state.wettb) {
+          menuBtnLabel.textContent = "🏆 " + (ligaName(state.wettb.series) || state.wettb.name || "Wettbewerb");
         } else if (state.search) {
           menuBtnLabel.textContent = "🔍 Suche";
         } else if (state.fremd) {
@@ -1822,11 +1969,11 @@
         menuPanel.classList.toggle("open", menuOpen);
         // Reiter (Spielplan/Tabelle/Ticker) nur im Team-Modus – im
         // ASV-heute-Modus gibt es bewusst nur den Ticker ohne Reiter
-        tabRow.style.display = ((state.entry !== null || !!state.fremd) && !state.noFilter && !state.asvHeute && !state.search) ? "flex" : "none";
+        tabRow.style.display = ((state.entry !== null || !!state.fremd) && !state.noFilter && !state.asvHeute && !state.wettb && !state.search) ? "flex" : "none";
         // Modus-Zeile immer, Mannschafts-Zeilen nur im Team-Modus
         renderModeRow();
         renderFavoritenRow();
-        const teamMode = !state.noFilter && !state.asvHeute && !state.search && !state.fremd;
+        const teamMode = !state.noFilter && !state.asvHeute && !state.wettb && !state.search && !state.fremd;
         const bereichMode = teamMode || state.asvHeute; // Bereichs-Zeile auch im ASV-heute-Modus (aktiver Chip sichtbar)
         teamRowsLabel.style.display = bereichMode ? "" : "none";
         catRow.style.display = bereichMode ? "" : "none";
@@ -1838,6 +1985,7 @@
         renderTabRow();
         renderHeuteRow();
         renderAsvHeuteRow();
+        renderWettbewerbRow();
         renderSucheRow();
         showEntry();
         renderPlaceholder();
@@ -1856,12 +2004,12 @@
         const fr = p.get("fremd");
         if (q) {
           state.noFilter = false; state.asvHeute = false;
-          state.search = true; state.fremd = null;
+          state.search = true; state.fremd = null; state.wettb = null;
           suchText = q; menuOpen = true;
         } else if (team) {
           const t = CONFIG.find((e) => e.wettbewerb === team);
           if (t) {
-            state.noFilter = false; state.asvHeute = false; state.search = false; state.fremd = null;
+            state.noFilter = false; state.asvHeute = false; state.search = false; state.fremd = null; state.wettb = null;
             state.cat = t.cat; state.grp = t.grp; state.entry = t.idx;
             rememberEntry(t.cat, t.grp, t.idx);
             state.tab = "ticker";
@@ -1874,6 +2022,7 @@
             state.noFilter = false; state.asvHeute = false; state.search = false;
             state.cat = null; state.grp = null; state.entry = null;
             state.fremd = { name: name, klasse: "", series: teile[0], teamId: teile[1], liga: "" };
+            state.wettb = null;
             state.tab = "ticker";
             menuOpen = false;
           }
@@ -1920,6 +2069,7 @@
         renderEntryRow();
         renderHeuteRow();
         renderAsvHeuteRow();
+        renderWettbewerbRow();
         updateSuchErgebnisse();
       }
       function refreshTickerIndex() {
