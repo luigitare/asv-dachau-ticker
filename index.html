@@ -21,10 +21,6 @@
         background: #f4f6f8; padding-bottom: .2rem;
       }
       .topbar header { position: relative; display: flex; align-items: center; justify-content: space-between; margin-bottom: .4rem; white-space: nowrap; }
-      .tabbarRow {
-        position: sticky; top: 50px; z-index: 199;
-        background: #f4f6f8; padding: .15rem 0 .4rem; margin-bottom: .5rem;
-      }
       .logo { height: 40px; width: auto; flex-shrink: 0; display: block; }
       .mpSep { border-top: 1px solid #e5e7eb; margin: .7rem 0 .2rem; }
       /* Aufklappliste: eine Karte pro ASV-Spiel heute */
@@ -348,6 +344,12 @@
           <div class="filterrow" id="grpRow"></div>
           <!-- Stufe 3: konkretes Team / Wettbewerb -->
           <div class="filterrow" id="entryRow"></div>
+          <!-- Ansicht-Reiter (v50, Nutzer-Wunsch 06.11.): standen vorher
+               als eigene Leiste UEBER dem Inhalt – jetzt letzte Zeile im
+               Menü, das Team-iframe rueckt bei allen Teams nach oben.
+               Nur bei ASV-Teams gefuellt (fremd = nur Ticker, kein Reiter). -->
+          <div class="rowlabel2" id="tabRowLabel">Ansicht</div>
+          <div class="filterrow" id="tabRow"></div>
           <!-- Team-Suche (Modus-Chip „🔍 Suche“): Eingabefeld +
                Mannschafts-Treffer stehen IM MENÜ -->
           <div id="sucheRow" style="display:none"></div>
@@ -355,9 +357,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Ansicht-Umschalter: immer sichtbar über dem Inhalt -->
-    <div class="filterrow tabbarRow" id="tabRow"></div>
 
     <!-- Heute-Zeile: Spiele des gewaehlten Teams, die heute stattfinden -->
     <div id="heuteRow" style="display:none"></div>
@@ -1985,7 +1984,12 @@
         // deshalb Zeile komplett weg (v49): iframe rueckt nach oben.
         const curE = currentEntry();
         const nurTicker = !!state.fremd || (curE && curE.externalUrl);
-        tabRow.style.display = ((state.entry !== null || !!state.fremd) && !nurTicker && !state.noFilter && !state.asvHeute && !state.wettb && !state.search) ? "flex" : "none";
+        // v50: Reiter-Zeile steht als LETZTE Zeile IM MENÜ – Label
+        // („Ansicht“) mit der Zeile zusammen ein-/ausblenden.
+        const tabZeigen = (state.entry !== null || !!state.fremd) && !nurTicker && !state.noFilter && !state.asvHeute && !state.wettb && !state.search;
+        tabRow.style.display = tabZeigen ? "flex" : "none";
+        const tabRowLabelEl = document.getElementById("tabRowLabel");
+        if (tabRowLabelEl) tabRowLabelEl.style.display = tabZeigen ? "" : "none";
         // Modus-Zeile immer, Mannschafts-Zeilen nur im Team-Modus
         renderModeRow();
         renderFavoritenRow();
