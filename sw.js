@@ -1,6 +1,6 @@
 // Minimaler Service Worker: App-Shell cachen,
 // Daten/Ticker IMMER live aus dem Netz holen.
-const CACHE = "asv-dachau-v46";
+const CACHE = "asv-dachau-v47";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./logo_c.svg"];
 
 self.addEventListener("install", (event) => {
@@ -37,5 +37,3 @@ self.addEventListener("fetch", (event) => {
     })
   );
 });
-
-

@@ -35,7 +35,7 @@
         padding: .45rem .65rem; font-size: .78rem; cursor: pointer; white-space: nowrap;
       }
       .asvcard .klasse { font-weight: 700; color: #1e3a8a; font-size: .72rem; }
-      .asvcard .hc-zeit { font-weight: 700; color: #6b7280; font-size: .72rem; }
+      .asvcard .hc-zeit { font-weight: 700; color: #111827; font-size: .72rem; }
       .asvcard b { font-weight: 600; color: #374151; }
       .asvcard b.asv { color: #1e3a8a; }
       /* geplant: nicht klickbar (noch keine Detail-URL) */
@@ -69,7 +69,9 @@
       .taglabel:first-child { margin-top: 0; }
       /* Liga-/Wettbewerbs-Name auf den Spiel-Karten (06.11.): dezente
          kleine Zeile, bricht um, wenn der Name lang ist. */
-      .hcliga { font-size: .68rem; color: #9ca3af; white-space: normal; min-width: 0; }
+      /* Liga-Name auf den Spiel-Karten (v47): normal schwarz und gut
+         lesbar statt klein/hellgrau, bricht um, wenn der Name lang ist. */
+      .hcliga { font-size: .74rem; color: #111827; font-weight: 600; white-space: normal; min-width: 0; }
       /* Wettbewerbs-Suche: lange Liga-Namen duerfen in der Karte umbrechen */
       .suchcards .asvcard b { white-space: normal; }
       .suchcards { display: flex; flex-direction: column; gap: .4rem; }
@@ -222,29 +224,37 @@
         padding: .4rem .55rem; font-size: .74rem; cursor: pointer; white-space: normal;
         min-width: 165px; max-width: 225px;
       }
-      /* 3-Zeilen-Gegner-Karte: Status / Gegner / Datum */
+      /* 3-Zeilen-Gegner-Karte (v47): Zeile 1 Status+Datum+▶ / Zeile 2 Liga / Zeile 3 Ort+Gegner+Ergebnis */
       .hc-top { display: flex; align-items: center; justify-content: space-between; gap: .3rem; }
-      .hc-status { font-weight: 700; font-size: .66rem; letter-spacing: .02em; display: flex; align-items: center; gap: .3rem; }
+      .hc-status { font-weight: 700; font-size: .8rem; letter-spacing: .02em; display: flex; align-items: center; gap: .3rem; color: #111827; }
       .hc-status.live { color: #b91c1c; }
-      .hc-status.plan { color: #2563eb; }
-      .hc-status.done { color: #6b7280; }
+      /* Datum/Uhrzeit: normal schwarz statt hellgrau (Nutzer-Wunsch 06.11.) */
+      .hc-datum { color: #111827; font-size: .72rem; font-weight: 600; }
+      /* ▶ statt 📌-Nadel: kleiner blauer Kreis rechts, nur bei klickbaren Spielen */
+      .hc-go {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 1.15rem; height: 1.15rem; border-radius: 999px; flex: 0 0 auto;
+        background: #1e3a8a; color: #fff; font-size: .55rem; line-height: 1;
+      }
       .hc-ort { font-size: .8rem; }
-      .hc-geit b { font-weight: 600; color: #374151; }
-      .hc-zeit2 { color: #6b7280; font-size: .66rem; }
+      /* Zeile 3: Gegner links, Ergebnis rechts */
+      .hc-geit { display: flex; align-items: baseline; gap: .3rem; }
+      .hc-geit .erg { margin-left: auto; }
       .heutecard:hover { border-color: #2563eb; background: #eff6ff; }
       .heutecard.pinned { border-color: #1e3a8a; background: #bfdbfe; }
-      .heutecard .hc-zeit { font-weight: 700; color: #6b7280; font-size: .72rem; }
-      .heutecard .hc-pin { font-size: .8rem; }
+      .heutecard .hc-zeit { font-weight: 700; color: #111827; font-size: .72rem; }
       .heutecard b { font-weight: 600; color: #374151; }
       .heutecard b.asv { color: #1e3a8a; }
       /* Noch nicht gestartetes Spiel: Karte nur Anzeige, nicht klickbar
          (es gibt noch keine Detail-URL im Ticker-Backend) */
       .heutecard.inaktiv { cursor: default; }
       .heutecard.inaktiv:hover { border-color: #d1d5db; background: #fff; }
-      /* beendet (fi=1): grau mit Ergebnis, klickbar -> Ticker-Vergangenheit */
-      .heutecard.done { border-color: #e5e7eb; background: #f9fafb; color: #6b7280; cursor: pointer; }
-      .heutecard.done:hover { border-color: #d1d5db; background: #f3f4f6; }
-      .heutecard.done b { color: #374151; }
+      /* klickbar (LIVE/beendet): dezenter blauer Rand als Button-Signal */
+      .heutecard.live, .heutecard.done { border-color: #93c5fd; }
+      /* beendet (fi=1): Text normal schwarz statt hellgrau, klickbar -> Ticker-Vergangenheit */
+      .heutecard.done { background: #f9fafb; color: #111827; cursor: pointer; }
+      .heutecard.done:hover { border-color: #2563eb; background: #f3f4f6; }
+      .heutecard.done b { color: #1f2937; }
       .heutecard.done b.asv { color: #1e3a8a; }
       .heutecard.done .erg { font-weight: 700; color: #111827; font-size: .78rem; }
       /* Gepinnt gewinnt IMMER (auch gegen .done/.inaktiv): kräftig blau */
@@ -1286,30 +1296,29 @@
           const ergFertig = (m.fi && m.sp1 !== undefined && m.sp2 !== undefined) ? m.sp1 + ":" + m.sp2 : "";
           const card = document.createElement("button");
           card.className = "heutecard" + (live ? " live" : "") + (fertig ? " done" : "") + (pinAktiv ? " pinned" : "") + (!live && !fertig ? " inaktiv" : "");
-          // Karten-Design (Nutzer-Wunsch 31.10.): kompakte 3-Zeilen-Karte
-          // im GEGNER-Prinzip – der eigene Teamname entfaellt (Kontext
-          // ist die gewaehlte Mannschaft), stattdessen Heim/Auswaerts:
-          //   Zeile 1: Status (LIVE / 📅 GEPLANT / ✅ BEENDET), bei
-          //            beendet das Satz-Ergebnis, 📌-Nadel ganz rechts
-          //   Zeile 2: 🏙/✈️ Gegner
-          //   Zeile 3: Datum · Uhrzeit (bei "heute" nur heute/Uhrzeit)
+          // Karten-Design (v47, Nutzer-Wunsch 06.11.): 3-Zeilen-Gegner-
+          // Karte im GEGNER-Prinzip – der eigene Teamname entfaellt
+          // (Kontext ist die gewaehlte Mannschaft):
+          //   Zeile 1: Status-Icon (LIVE ausgeschrieben rot / ✅ / 📅)
+          //            + Datum·Uhrzeit + ▶ bei klickbaren Spielen
+          //   Zeile 2: Liga-Name (schwarz, gut lesbar)
+          //   Zeile 3: 🏠/✈️ Gegner + Satz-Ergebnis (rechts)
           const heim = tid ? (m.t1i === tid) : (normTeam(m.t1r) === nName);
           const gegner = heim ? m.t2r : m.t1r;
           const liga = ligaName(m.series);
           const status = live
             ? '<span class="hc-status live"><span class="livedot"></span>LIVE</span>'
             : fertig
-              ? '<span class="hc-status done">✅ BEENDET</span>'
-              : '<span class="hc-status plan">📅 GEPLANT</span>';
+              ? '<span class="hc-status done">✅</span>'
+              : '<span class="hc-status plan">📅</span>';
           const datumZeit = (istHeute ? "heute" : tagDatum) + (zeit === "00:00" ? "" : " · " + zeit);
           card.innerHTML =
             '<span class="hc-top">' + status +
-              (ergFertig ? '<span class="erg">' + ergFertig + '</span>' : "") +
-              ((live || fertig) ? '<span class="hc-pin">📌</span>' : "") +
+              '<span class="hc-datum">' + datumZeit + '</span>' +
+              ((live || fertig) ? '<span class="hc-go" aria-hidden="true">▶</span>' : "") +
             '</span>' +
-            '<span class="hc-geit"><span class="hc-ort">' + (heim ? "🏠" : "✈️") + '</span> <b' + (gegner && gegner.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(gegner) + '</b></span>' +
-            '<span class="hc-zeit2">' + (live ? (istHeute ? "heute" + (zeit === "00:00" ? "" : " · " + zeit) : datumZeit) : datumZeit) + '</span>' +
-            (liga ? '<span class="hcliga">' + escHtml(liga) + '</span>' : '');
+            (liga ? '<span class="hcliga">' + escHtml(liga) + '</span>' : "") +
+            '<span class="hc-geit"><span class="hc-ort">' + (heim ? "🏠" : "✈️") + '</span> <b' + (gegner && gegner.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(gegner) + '</b>' + (ergFertig ? '<span class="erg">' + ergFertig + '</span>' : "") + '</span>';
           if (live || fertig) {
             card.title = live
               ? "Dieses Spiel läuft gerade – Live-Ticker öffnen (erneut antippen = Pin entfernen)"
@@ -1452,7 +1461,7 @@
               ? '<span class="livedot"></span><span class="hc-zeit">LIVE</span>'
               : '<span class="hc-zeit">📅 ' + datumText + '</span>';
             const ergHtml = fertig
-              ? ((m.sp1 !== undefined && m.sp2 !== undefined) ? '<span class="erg">' + m.sp1 + ":" + m.sp2 + '</span>' : "") + '<span class="hc-zeit">✅ fertig</span>'
+              ? ((m.sp1 !== undefined && m.sp2 !== undefined) ? '<span class="erg">' + m.sp1 + ":" + m.sp2 + '</span>' : "") + '<span class="hc-zeit">✅</span>'
               : "";
             const paarung =
               '<span><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b></span>';
@@ -1594,7 +1603,7 @@
               ? '<span class="livedot"></span><span class="hc-zeit">LIVE</span>'
               : '<span class="hc-zeit">📅 ' + datumText + '</span>';
             const ergHtml = fertig
-              ? ((m.sp1 !== undefined && m.sp2 !== undefined) ? '<span class="erg">' + m.sp1 + ":" + m.sp2 + '</span>' : "") + '<span class="hc-zeit">✅ fertig</span>'
+              ? ((m.sp1 !== undefined && m.sp2 !== undefined) ? '<span class="erg">' + m.sp1 + ":" + m.sp2 + '</span>' : "") + '<span class="hc-zeit">✅</span>'
               : "";
             const paarung =
               '<span><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b></span>';
