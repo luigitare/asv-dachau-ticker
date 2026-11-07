@@ -637,6 +637,7 @@
         if (menuPanel.contains(ev.target) || menuBtn.contains(ev.target)) return;
         menuOpen = false;
         if (state.search) state.search = false; // Suche lebt im Menü
+        navDismissNext = true; // v56: Schließen ist kein Vorwärts-Schritt
         renderAll();
       });
 
@@ -687,12 +688,16 @@
       // Menü beim ersten Besuch ohne Auswahl automatisch öffnen
       let menuOpen = state.entry === null && !state.fremd && !state.noFilter && !state.asvHeute;
       menuBtn.onclick = () => {
+        const warOffen = menuOpen;
         menuOpen = !menuOpen;
         // Menü wieder geöffnet + fremde Mannschaft gewählt: die ganze
         // Suche (Eingabefeld + Treffer) direkt wieder aufklappen
         // (Nutzer-Wunsch 31.10.) – state.search wurde beim Auswählen
         // des Teams beendet, sonst bliebe nur die Modus-Zeile sichtbar.
         if (menuOpen && state.fremd) state.search = true;
+        // v56: Menü SCHLIESSEN ist kein "Vorwärts"-Schritt – der
+        // Android-Zurück-Button darf das Menü nicht wieder öffnen.
+        if (warOffen) navDismissNext = true;
         renderAll();
       };
       document.getElementById("menuCloseBtn").onclick = () => {
@@ -700,6 +705,7 @@
         // Die Suche läuft IM Menü: Menü schließen beendet sie und
         // zeigt die bisherige Auswahl wieder an
         if (state.search) state.search = false;
+        navDismissNext = true; // v56: Schließen ist kein Vorwärts-Schritt
         renderAll();
       };
 
@@ -708,7 +714,12 @@
       // selbst – nur noch ueber "Kurze Einfuehrung" im Menue.
       const introOverlay = document.getElementById("introOverlay");
       const INTRO_KEY = "asvIntroSeen";
-      function zeigeIntro() { introOverlay.style.display = "flex"; }
+      function zeigeIntro() {
+        introOverlay.style.display = "flex";
+        // v56: eigener History-Eintrag, damit der Android-Zurück-Button
+        // nur das Intro schließt statt die App zu verlassen.
+        try { history.pushState({ asvNavIntro: true }, "", location.href); } catch (e) { }
+      }
       function schliesseIntro() {
         introOverlay.style.display = "none";
         try { localStorage.setItem(INTRO_KEY, "1"); } catch (e) { /* Storage gesperrt: Intro kommt beim naechsten Start wieder, harmlos */ }
@@ -1599,7 +1610,12 @@
             const back = document.createElement("button");
             back.className = "tb-back";
             back.textContent = "← Zurück zur Turnieransicht";
-            back.onclick = () => { state.wettb.detail = null; saveState(); renderAll(); };
+            back.onclick = () => {
+              // v56: Android-Zurück-Logik mitbenutzen – gleicher Stack,
+              // kein Doppelschritt. Fallback (ohne History-Eintrag): direkt.
+              if (navStack.length && history.state && history.state.asvNav) history.back();
+              else { state.wettb.detail = null; saveState(); renderAll(); }
+            };
             wrap.appendChild(back);
             const zeitFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" });
             const tagFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", weekday: "short", day: "2-digit", month: "2-digit" });
@@ -2212,6 +2228,45 @@
         }
       }
 
+      // ---------------- Android-Zurück-Button (07.11., v56) ----------------
+      // Androids Hardware-Zurück soll IMMER einen logischen Ansichts-
+      // Schritt zurückgehen statt die App zu verlassen. Mechanik:
+      // renderAll() vergleicht bei JEDEM Aufruf den Ansichts-Zustand
+      // (Menü, Modus, Bereich/Mannschaft, Wettbewerb/Detail, Tab) mit
+      // dem Zustand davor – bei einer Änderung landet der alte Zustand
+      // auf einem Stack, und ein History-Eintrag wird angelegt. Der
+      // popstate-Listener (= Zurück-Button) stellt dann den jeweils
+      // letzten Zustand wieder her. Menü schließen / Intro gilt dabei
+      // bewusst NICHT als "Vorwärts"-Schritt (navDismissNext).
+      const navSnap = () => JSON.stringify([
+        menuOpen, state.search, state.fremd, state.wettb, state.asvHeute,
+        state.noFilter, state.cat, state.grp, state.entry, state.tab || "ticker"
+      ]);
+      let navStack = [];
+      let navLetzter = navSnap();
+      let navDismissNext = false;
+      function navMerken() {
+        const jetzt = navSnap();
+        if (navDismissNext) { navDismissNext = false; navLetzter = jetzt; return; }
+        if (jetzt !== navLetzter) {
+          navStack.push(navLetzter);
+          if (navStack.length > 40) navStack.shift();
+          try { history.pushState({ asvNav: true }, "", location.href); } catch (e) { /* ohne History: Zurück verhält sich wie bisher */ }
+          navLetzter = jetzt;
+        }
+      }
+      window.addEventListener("popstate", () => {
+        // Intro offen? Zurück schließt nur das Intro.
+        if (introOverlay.style.display === "flex") { schliesseIntro(); return; }
+        // Kein Schritt mehr übrig: normales Verhalten (App verlassen).
+        if (!navStack.length) return;
+        const s = JSON.parse(navStack.pop());
+        navDismissNext = true; // Wiederherstellen ist kein neuer Schritt
+        menuOpen = s[0]; state.search = s[1]; state.fremd = s[2]; state.wettb = s[3];
+        state.asvHeute = s[4]; state.noFilter = s[5]; state.cat = s[6]; state.grp = s[7]; state.entry = s[8]; state.tab = s[9];
+        renderAll();
+      });
+
       function renderAll() {
         // Gespeicherte Auswahl validieren: existiert der Eintrag noch?
         if (state.entry !== null && !CONFIG[state.entry]) { state.entry = null; state.grp = null; state.cat = null; menuOpen = true; }
@@ -2278,6 +2333,7 @@
         updateFloatbar();
         fixiereTicker();
         saveState();
+        navMerken(); // v56: Android-Zurück-Button füttern
       }
       // ---------------- Deep-Links (?q / ?team / ?fremd) ----------------
       // Geteilte Links oeffnen beim Empfaenger direkt dieselbe Ansicht.
@@ -2415,3 +2471,4 @@
     </script>
   </body>
 </html>
+
