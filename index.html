@@ -1652,7 +1652,7 @@
             + '<span class="tb-uhr">' + escHtml(datumText(m)) + "</span>"
             + "<span>" + tbTeamHtml(m.t1r) + " – " + tbTeamHtml(m.t2r) + "</span>"
             + (live
-              ? '<span class="tb-res tb-live">🔴 ' + (m.sp1 !== undefined ? m.sp1 + ":" + m.sp2 : "LIVE") + "</span>"
+              ? '<span class="tb-res tb-live">🔴 LIVE</span>'
               : (m.fi ? '<span class="tb-res">' + (m.sp1 !== undefined ? m.sp1 + ":" + m.sp2 : "–") + "</span>" : ""));
           if (klick) b.onclick = () => { state.wettb.detail = m.id; saveState(); renderAll(); };
           else b.title = "Geplant – der Ticker ist ab Spielbeginn aufrufbar";
