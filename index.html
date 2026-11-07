@@ -1721,11 +1721,26 @@
         hinweis.style.margin = "0 0 .3rem";
         hinweis.textContent = "ℹ️ Live- und beendete Spiele öffnen den Ticker des Spiels – Platzhalter lösen sich auf, sobald das Spiel davor beendet ist.";
         wrap.appendChild(hinweis);
-        // Vorrunde: Gruppenspiele = Spiele ohne Platzhalter; Gruppen =
+        // Vorrunde: Gruppenspiele = Spiele ohne Platzhalter, auf die
+        // sich KEIN "Gewinner/Verlierer Spiel N" bezieht; Gruppen =
         // Zusammenhangskomponenten der Paarungen (Union-Find), sortiert
         // nach erstem Spieltermin.
-        const gruppen = alle.filter((m) => !tbIstPh(m.t1r) && !tbIstPh(m.t2r));
-        const ko = alle.filter((m) => tbIstPh(m.t1r) || tbIstPh(m.t2r));
+        // v57-Fix: Nicht-Platzhalter-Spiele, auf die sich ein Bracket-
+        // Platzhalter bezieht (z. B. "Gewinner Spiel 13"), sind PLATZIE-
+        // RUNGS-Spiele, KEINE Gruppenspiele. Ohne den Fix verschmolzen
+        // die zwei nachtraeglich vom Backend mit echten Team-Namen
+        // gefuellten Querspiele (Bayernpokal U16w 07.11.: "Mittelfranken
+        // - Oberbayern II" = Spiel 13, "Unterfranken - Schwaben" =
+        // Spiel 14) die zwei 4er-Gruppen zu EINER falschen 8er-Tabelle.
+        const refNr = new Set();
+        alle.forEach((m) => {
+          [m.t1r, m.t2r].forEach((s) => {
+            const g = (s || "").match(/^(Gewinner|Verlierer) Spiel (\d+)$/);
+            if (g) refNr.add(+g[2]);
+          });
+        });
+        const gruppen = alle.filter((m) => !tbIstPh(m.t1r) && !tbIstPh(m.t2r) && !refNr.has(m._tbNr));
+        const ko = alle.filter((m) => tbIstPh(m.t1r) || tbIstPh(m.t2r) || refNr.has(m._tbNr));
         if (gruppen.length) {
           const parent = {};
           const find = (x) => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
