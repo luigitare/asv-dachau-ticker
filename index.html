@@ -197,8 +197,21 @@
 
       /* Turnier-Ansicht (07.11.): Turnierbaum im Wettbewerb-Modus */
       .tb-spiel { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px dashed #e5e7eb; padding: .42rem .1rem; font-size: .84rem; color: #111827; font-family: inherit; }
-      button.tb-spiel.klick { cursor: pointer; }
+      /* v59: klickbare Turnier-Zeilen sichtbar kennzeichnen – gleiches
+         Signal wie die Heute-Karten (v47): dezenter blauer Rand + ▶.
+         Geplante Zeilen bleiben ohne Rand (nur gestrichelte Trennlinie). */
+      button.tb-spiel.klick {
+        cursor: pointer;
+        border: 1px solid #93c5fd; border-radius: 8px;
+        background: #fff; padding: .42rem .4rem; margin: .12rem 0;
+      }
       button.tb-spiel.klick:active { background: #eff6ff; }
+      /* kleiner blauer ▶-Kreis am Zeilenende, nur bei klickbaren Spielen */
+      .tb-go {
+        display: inline-flex; align-items: center; justify-content: center;
+        width: 1.15rem; height: 1.15rem; border-radius: 999px; flex: 0 0 auto;
+        background: #1e3a8a; color: #fff; font-size: .55rem; line-height: 1;
+      }
       .tb-nr { background: #e0e7ff; color: #1e3a8a; border-radius: .35rem; padding: 0 .38rem; font-size: .7rem; font-weight: 800; flex: 0 0 auto; }
       .tb-uhr { color: #6b7280; font-size: .74rem; flex: 0 0 auto; }
       .tb-ph { color: #9ca3af; font-style: italic; font-weight: 400; }
@@ -1775,7 +1788,8 @@
             + "<span>" + tbTeamHtml(m.t1r) + " – " + tbTeamHtml(m.t2r) + "</span>"
             + (live
               ? '<span class="tb-res tb-live">🔴 LIVE</span>'
-              : (m.fi ? '<span class="tb-res">' + (m.sp1 !== undefined ? m.sp1 + ":" + m.sp2 : "–") + "</span>" : ""));
+              : (m.fi ? '<span class="tb-res">' + (m.sp1 !== undefined ? m.sp1 + ":" + m.sp2 : "–") + "</span>" : ""))
+            + (klick ? '<span class="tb-go" aria-hidden="true">▶</span>' : "");
           if (klick) b.onclick = () => { state.wettb.detail = m.id; saveState(); renderAll(); };
           else b.title = "Geplant – der Ticker ist ab Spielbeginn aufrufbar";
           return b;
