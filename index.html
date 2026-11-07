@@ -1701,6 +1701,7 @@
                 let s = 0, n = 0, sp = 0, sk = 0;
                 c.spiele.forEach((m) => {
                   if (!m.fi || m.sp1 === undefined) return;
+                  if (m.t1r !== t && m.t2r !== t) return; // Team spielt nicht mit -> nicht zaehlen!
                   const heim = m.t1r === t;
                   const eig = heim ? m.sp1 : m.sp2, and = heim ? m.sp2 : m.sp1;
                   sp += eig; sk += and;
