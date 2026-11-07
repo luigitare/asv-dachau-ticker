@@ -1590,6 +1590,75 @@
         if (!m.fi || m.sp1 === undefined || m.sp2 === undefined || m.sp1 === m.sp2) return null;
         return m.sp1 > m.sp2 ? m.t2r : m.t1r;
       }
+      // ---------------- Turnier-Struktur festsetzen (07.11., v58) ----------------
+      // Nutzer-Wunsch: Sobald ein Wettbewerb als Turnier erkannt ist,
+      // wird die Gruppeneinteilung in localStorage FESTGESETZT. Der BVV
+      // loest die Platzhalter naemlich nach und nach durch echte Team-
+      // namen auf - ohne Fixup findet die App die Struktur danach nicht
+      // wieder (eine grosse 8er-Tabelle statt 2x4er-Gruppen).
+      const TB_STRUCT_KEY = "asvTurnierStruktur-v1";
+      let tbStruktur = {};
+      try { tbStruktur = JSON.parse(localStorage.getItem(TB_STRUCT_KEY) || "{}") || {}; } catch (e) { tbStruktur = {}; }
+      function tbSpeichereStruktur() {
+        try { localStorage.setItem(TB_STRUCT_KEY, JSON.stringify(tbStruktur)); } catch (e) { }
+      }
+      // Groesstes chronologisches Praefix der Nicht-Platzhalter-Spiele,
+      // das vollstaendige Round-Robin-Gruppen ergibt (jede Paarung max.
+      // 1x, jedes Team spielt Gruppengroesse-1 Spiele). Bereits aufgel-
+      // oeste KO-Spiele (z. B. Spiel 13/14 des Bayernpokals) zaehlen so
+      // nicht mehr als Gruppenspiele. Rueckgabe [{teams,spiele-IDs}]|null.
+      function tbErkenneStruktur(alle) {
+        const nonPH = alle.filter((m) => !tbIstPh(m.t1r) && !tbIstPh(m.t2r));
+        for (let k = nonPH.length; k >= 1; k--) {
+          const cand = nonPH.slice(0, k);
+          const pairs = new Set();
+          let unique = true;
+          for (const m of cand) {
+            const key = [m.t1r, m.t2r].sort().join(" | ");
+            if (pairs.has(key)) { unique = false; break; }
+            pairs.add(key);
+          }
+          if (!unique) continue;
+          const parent = {};
+          const find = (x) => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
+          const union = (a, b) => { a = find(a); b = find(b); if (a !== b) parent[a] = b; };
+          cand.forEach((m) => {
+            if (parent[m.t1r] === undefined) parent[m.t1r] = m.t1r;
+            if (parent[m.t2r] === undefined) parent[m.t2r] = m.t2r;
+            union(m.t1r, m.t2r);
+          });
+          const comps = new Map();
+          cand.forEach((m) => {
+            const root = find(m.t1r);
+            if (!comps.has(root)) comps.set(root, { teams: new Set(), spiele: [] });
+            const c = comps.get(root);
+            c.teams.add(m.t1r); c.teams.add(m.t2r); c.spiele.push(m);
+          });
+          const ok = [...comps.values()].every((c) => c.teams.size >= 3
+            && [...c.teams].every((t) => c.spiele.filter((m) => m.t1r === t || m.t2r === t).length === c.teams.size - 1));
+          if (ok) {
+            const liste = [...comps.values()].sort((a, b) => a.spiele[0].date - b.spiele[0].date);
+            return liste.map((c) => ({ teams: [...c.teams], spiele: c.spiele.map((m) => m.id) }));
+          }
+        }
+        return null;
+      }
+      // Struktur fuer eine Serie: gespeicherte nehmen, sonst frisch
+      // erkennen und festsetzen ("festgesetzt" = Nutzer-Wunsch 07.11.).
+      function tbStrukturFuer(series, alle) {
+        const saved = tbStruktur[series];
+        if (saved && saved.gruppen && saved.gruppen.length) return saved;
+        const erkannt = tbErkenneStruktur(alle);
+        if (!erkannt) return null;
+        const s = { gruppen: erkannt };
+        tbStruktur[series] = s;
+        tbSpeichereStruktur();
+        return s;
+      }
+      function tbTurnierAktiv(series) {
+        if (tbStruktur[series] && tbStruktur[series].gruppen && tbStruktur[series].gruppen.length) return true;
+        return tickerIndex.some((m) => m.series === series && (tbIstPh(m.t1r) || tbIstPh(m.t2r)));
+      }
       function renderWettbewerbRow() {
         if (!state.wettb) return;
         // Bereits angezeigtes Spiel-Detail NICHT neu bauen (sonst laedt
@@ -1640,9 +1709,9 @@
             return;
           }
         }
-        // Turnier (Platzhalter im Spielplan) -> Turnierbaum, sonst Liste
-        if (tickerIndex && tickerIndex.some((m) => m.series === state.wettb.series
-          && (tbIstPh(m.t1r) || tbIstPh(m.t2r)))) {
+        // Turnier (Platzhalter im Spielplan ODER festgesetzte Struktur,
+        // v58) -> Turnierbaum, sonst Liste
+        if (tickerIndex && tbTurnierAktiv(state.wettb.series)) {
           renderTurnier();
           return;
         }
@@ -1721,26 +1790,31 @@
         hinweis.style.margin = "0 0 .3rem";
         hinweis.textContent = "ℹ️ Live- und beendete Spiele öffnen den Ticker des Spiels – Platzhalter lösen sich auf, sobald das Spiel davor beendet ist.";
         wrap.appendChild(hinweis);
-        // Vorrunde: Gruppenspiele = Spiele ohne Platzhalter, auf die
-        // sich KEIN "Gewinner/Verlierer Spiel N" bezieht; Gruppen =
-        // Zusammenhangskomponenten der Paarungen (Union-Find), sortiert
-        // nach erstem Spieltermin.
-        // v57-Fix: Nicht-Platzhalter-Spiele, auf die sich ein Bracket-
-        // Platzhalter bezieht (z. B. "Gewinner Spiel 13"), sind PLATZIE-
-        // RUNGS-Spiele, KEINE Gruppenspiele. Ohne den Fix verschmolzen
-        // die zwei nachtraeglich vom Backend mit echten Team-Namen
-        // gefuellten Querspiele (Bayernpokal U16w 07.11.: "Mittelfranken
-        // - Oberbayern II" = Spiel 13, "Unterfranken - Schwaben" =
-        // Spiel 14) die zwei 4er-Gruppen zu EINER falschen 8er-Tabelle.
-        const refNr = new Set();
-        alle.forEach((m) => {
-          [m.t1r, m.t2r].forEach((s) => {
-            const g = (s || "").match(/^(Gewinner|Verlierer) Spiel (\d+)$/);
-            if (g) refNr.add(+g[2]);
+        // v58: Turnier-Struktur (Gruppen + Gruppenspiel-IDs) aus dem
+        // Cache (festgesetzt) oder frisch erkennen (Round-Robin-Praefix).
+        // Damit bleibt die 2x4er-Einteilung stabil, auch wenn der BVV
+        // nachtraeglich ALLE Platzhalter durch echte Teamnamen ersetzt.
+        const struktur = tbStrukturFuer(state.wettb.series, alle);
+        const gruppen = [], ko = [];
+        if (struktur) {
+          const gruppenIds = new Set(struktur.gruppen.flatMap((g) => g.spiele));
+          alle.forEach((m) => { (gruppenIds.has(m.id) ? gruppen : ko).push(m); });
+        } else {
+          // Fallback (Struktur nicht erkennbar): v57-Logik - Nicht-
+          // Platzhalter-Spiele, auf die sich ein Bracket-Platzhalter
+          // bezieht (z. B. "Gewinner Spiel 13"), sind KEINE Gruppenspiele.
+          const refNr = new Set();
+          alle.forEach((m) => {
+            [m.t1r, m.t2r].forEach((s) => {
+              const g = (s || "").match(/^(Gewinner|Verlierer) Spiel (\d+)$/);
+              if (g) refNr.add(+g[2]);
+            });
           });
-        });
-        const gruppen = alle.filter((m) => !tbIstPh(m.t1r) && !tbIstPh(m.t2r) && !refNr.has(m._tbNr));
-        const ko = alle.filter((m) => tbIstPh(m.t1r) || tbIstPh(m.t2r) || refNr.has(m._tbNr));
+          alle.forEach((m) => {
+            if (tbIstPh(m.t1r) || tbIstPh(m.t2r) || refNr.has(m._tbNr)) ko.push(m);
+            else gruppen.push(m);
+          });
+        }
         if (gruppen.length) {
           const parent = {};
           const find = (x) => { while (parent[x] !== x) { parent[x] = parent[parent[x]]; x = parent[x]; } return x; };
