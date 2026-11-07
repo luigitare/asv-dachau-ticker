@@ -799,7 +799,8 @@
       // Schwebender Knopf: nur in der Ticker-Ansicht sinnvoll
       function updateFloatbar() {
         const tickerActive = !state.search && (state.noFilter
-          || ((state.entry !== null || !!state.fremd) && (state.tab || "ticker") === "ticker"));
+          || ((state.entry !== null || !!state.fremd) && (state.tab || "ticker") === "ticker")
+          || (state.wettb && state.wettb.detail)); // Turnier-Spiel-Detail: iframe via asvHeuteRow
         // Teilen-Knopf bleibt immer sichtbar (jede Ansicht ist teilbar),
         // Neu-laden + Hinweis nur in der Ticker-Ansicht sinnvoll
         floatBar.style.display = "flex";
@@ -807,6 +808,12 @@
       }
       // Schwebender Knopf wirkt auf die gerade aktive Ansicht
       floatReload.onclick = () => {
+        // Turnier-Spiel-Detail: iframe direkt neu laden
+        if (state.wettb && state.wettb.detail) {
+          const fr = asvHeuteRow.querySelector(".ticker-frame");
+          if (fr) { const u = fr.src; fr.src = "about:blank"; setTimeout(() => { fr.src = u; }, 30); }
+          return;
+        }
         const act = document.querySelector(".entry.active");
         if (act && act._reload) act._reload();
       };
