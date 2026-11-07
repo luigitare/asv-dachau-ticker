@@ -193,6 +193,7 @@
       /* Pin-URL-Eingabe entfernt (31.10.): Pinnen laeuft nur noch ueber
          die Heute-Karten (Toggle) bzw. den ✕-Chip. */
       .ticker-frame { width: 100%; height: min(640px, max(420px, calc(100dvh - 260px))); border: none; background: #fff; }
+      body.noscroll { overflow: hidden; }
 
       /* Turnier-Ansicht (07.11.): Turnierbaum im Wettbewerb-Modus */
       .tb-spiel { display: flex; align-items: center; flex-wrap: wrap; gap: .4rem; width: 100%; text-align: left; background: none; border: none; border-bottom: 1px dashed #e5e7eb; padding: .42rem .1rem; font-size: .84rem; color: #111827; font-family: inherit; }
@@ -817,6 +818,35 @@
         const act = document.querySelector(".entry.active");
         if (act && act._reload) act._reload();
       };
+      // ---------------- Fixierter oberer Teil (07.11., v55) ----------------
+      // In Ticker-Ansichten (Team-Ticker, ohne Filter, Turnier-Spiel-
+      // Detail) soll der Bereich UEBER dem iframe NICHT wegscrollbar
+      // sein (Nutzer-Wunsch): Seiten-Scroll wird gesperrt (body.noscroll)
+      // und der Haupt-Ticker-iframe wird bis zum unteren Fensterrand
+      // gestreckt - nur der iframe-Inhalt scrollt intern. Ansichten ohne
+      // iframe (Turnierbaum, Listen, Spielplan/Tabelle) scrollen normal.
+      let tbLockAktiv = false;
+      function hauptTickerFrame() {
+        if (state.wettb && state.wettb.detail) return asvHeuteRow.querySelector(".ticker-frame");
+        if (state.noFilter) return nfFrame;
+        if ((state.entry !== null || !!state.fremd) && (state.tab || "ticker") === "ticker" && !state.search)
+          return document.querySelector(".entry.active .ticker-frame");
+        return null;
+      }
+      function fixiereTicker() {
+        const fr = hauptTickerFrame();
+        const sichtbar = !!(fr && fr.offsetParent !== null);
+        document.querySelectorAll(".ticker-frame").forEach((f) => { if (f !== fr) f.style.height = ""; });
+        if (sichtbar) {
+          if (!tbLockAktiv) { tbLockAktiv = true; document.body.classList.add("noscroll"); window.scrollTo(0, 0); }
+          const top = fr.getBoundingClientRect().top;
+          fr.style.height = Math.max(300, window.innerHeight - top - 6) + "px";
+        } else if (tbLockAktiv) {
+          tbLockAktiv = false;
+          document.body.classList.remove("noscroll");
+        }
+      }
+      window.addEventListener("resize", () => { if (tbLockAktiv) fixiereTicker(); });
       // ---------------- Teilen (runder Knopf) + Deep-Links ----------------
       // Der Link oeffnet beim Empfaenger dieselbe Ansicht: ?q= Suche,
       // ?team= ASV-Mannschaft (ueber die Wettbewerb-Id), ?fremd= fremdes
@@ -2246,6 +2276,7 @@
         showEntry();
         renderPlaceholder();
         updateFloatbar();
+        fixiereTicker();
         saveState();
       }
       // ---------------- Deep-Links (?q / ?team / ?fremd) ----------------
