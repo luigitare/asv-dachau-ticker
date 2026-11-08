@@ -15,6 +15,31 @@
       ]
     },
     {
+      "wettbewerb": "04eb0acf-5110-48fe-9e05-7adf88822a8c",
+      "liga": "Zoi DVV-Pokal Männer",
+      "spiele": 1,
+      "asvTeams": [
+        "ASV Dachau"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau",
+        "Barock Volleys MTV Ludwigsburg"
+      ]
+    },
+    {
+      "wettbewerb": "0aef379f-c42c-46a4-95e0-60ea4d7ba214",
+      "liga": "2. Bundesliga Männer Süd",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau",
+        "Volley YoungStars Friedrichshafen",
+        "Keiler Volleys Stuttgart"
+      ]
+    },
+    {
       "wettbewerb": "12ad8590-9ed2-4e10-9356-9c296bed5568",
       "liga": "Regionalliga Süd-Ost Männer",
       "spiele": 2,
@@ -25,6 +50,19 @@
         "ASV Dachau III",
         "TSV Herrsching II",
         "MTV Rosenheim"
+      ]
+    },
+    {
+      "wettbewerb": "3239c1ea-ccad-410d-9205-004695d3f5c6",
+      "liga": "Dritte Liga Ost Männer",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau II"
+      ],
+      "gegnerBeispiele": [
+        "TSV Grafing II",
+        "ASV Dachau II",
+        "MTV München"
       ]
     },
     {
@@ -88,6 +126,19 @@
         "TSV Milbertshofen",
         "ASV Dachau VII",
         "TUSC Obermenzing II"
+      ]
+    },
+    {
+      "wettbewerb": "ea2fc469-c865-4b9b-a457-eb9b4debced0",
+      "liga": "Dritte Liga Ost Frauen",
+      "spiele": 3,
+      "asvTeams": [
+        "ASV Dachau"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau",
+        "AllgäuStrom Volleys Sonthofen",
+        "Dresdner SSV"
       ]
     }
   ]
