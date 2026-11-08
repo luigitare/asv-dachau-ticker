@@ -128,18 +128,21 @@
          flex-wrap-Zeile. */
       .chipzeile { width: 100%; display: flex; flex-wrap: wrap; gap: .4rem; }
       .chip {
+        position: relative;
         border: 1px solid #d1d5db; background: #fff; border-radius: 999px;
         padding: .3rem .7rem; font-size: .8rem; cursor: pointer;
       }
       .chip.active { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
-      /* Heute-Zahl an Chips (Nutzer-Wunsch 02.11.): kleines rotes
-         Badge = ASV-Spiele heute in diesem Bereich / dieser Mannschaft.
-         Nur sichtbar wenn > 0, sonst unveraenderter Chip. */
+      /* Heute-Zahl an Chips (Nutzer-Wunsch 02.11., Position 08.11.):
+         kleines rotes Badge = ASV-Spiele heute in diesem Bereich /
+         dieser Mannschaft. Ueberlappt die obere linke Chip-Ecke
+         (App-Badge-Stil, Nutzer-Wunsch 08.11.). Nur sichtbar wenn > 0. */
       .chipbadge {
-        display: inline-block; margin-left: .35rem; padding: 0 .38rem;
-        background: #dc2626; color: #fff; border-radius: 999px;
-        font-size: .68rem; font-weight: 700; line-height: 1.35;
-        vertical-align: middle;
+        position: absolute; top: -.5rem; left: -.5rem;
+        min-width: 1.05rem; padding: 0 .28rem; text-align: center;
+        background: #dc2626; color: #fff; border: 2px solid #f5f6f8;
+        border-radius: 999px; font-size: .68rem; font-weight: 700;
+        line-height: 1.25; z-index: 5; box-sizing: content-box;
       }
 
       .panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .28s ease; }
@@ -483,7 +486,7 @@
       const CONFIG = [
         // ---------------- HERREN ----------------
         { cat: "h", grp: "Herren 1", team: "ASV Dachau", league: "2. Bundesliga Süd Männer", chip: "2. Bundesliga", wettbewerb: "0aef379f-c42c-46a4-95e0-60ea4d7ba214", teamId: "82ec9fd4-c66d-4149-ac4d-dc1a33486b13" , ticker: "vbl" },
-        { cat: "h", grp: "Herren 1", team: "ASV Dachau", league: "DVV-Pokal Männer", chip: "DVV-Pokal", wettbewerb: "04eb0acf-5110-48fe-9e05-7adf88822a8c", teamId: "150507cf-b040-4fd2-9e7d-cb7e474b7b4b", ticker: "dvv" },
+        { cat: "h", grp: "Herren 1", team: "ASV Dachau", league: "DVV-Pokal Männer", chip: "DVV-Pokal", wettbewerb: "04eb0acf-5110-48fe-9e05-7adf88822a8c", teamId: "150507cf-b040-4fd2-9e7d-cb7e474b7b4b", ticker: "vbl" },
         { cat: "h", grp: "Herren 1", team: "ASV Dachau", league: "Pokalrunde Südbayern West Männer", chip: "Pokalrunde", wettbewerb: "b79976b3-1dc7-4c14-a965-9d713b5f2f61", teamId: "dd1a629b-25c8-4172-be66-8d3f20864f28" },
         { cat: "h", grp: "Herren 1", team: "ASV Dachau", league: "Landespokal Männer", chip: "Landespokal", wettbewerb: "12236641-a81f-4605-8e7f-020185161193", teamId: "688e4da0-f221-4985-9511-39f9f43ab8a1" },
         { cat: "h", grp: "Herren 2", team: "ASV Dachau II", league: "Dritte Liga Ost Männer", wettbewerb: "3239c1ea-ccad-410d-9205-004695d3f5c6", teamId: "b2ec1478-a06c-4102-8553-77317cf30ee6" , ticker: "dvv" },
