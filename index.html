@@ -1464,6 +1464,20 @@
       // Filterwechsel): Wettbewerb-UUID muss passen; gibt es mehrere
       // Eintraege in derselben Liga (zwei ASV-Teams), den zur Paarung
       // passenden nehmen.
+      // Mannschafts-Rang fuer die Sortierung in "Alle ASV-Spiele"
+      // (Nutzer-Wunsch 08.11.): Herren 1..x, Damen 1..x, Jugend M
+      // (aeltere zuerst: U20, U18, ...), Jugend W. Spiel ohne
+      // CONFIG-Zuordnung (990) ans Tagesende.
+      function asvTeamRang(m) {
+        const c = configForMatch(m);
+        if (!c) return 990;
+        const catRang = { h: 0, d: 100, jm: 200, jw: 300 }[c.cat] ?? 990;
+        const z = (c.grp || "").match(/(?:Herren|Damen)\s+(\d+)/);
+        if (z) return catRang + Number(z[1]) * 10;
+        const u = (c.grp || "").match(/U(\d+)/);
+        if (u) return catRang + (30 - Number(u[1])) * 10; // U20=100 .. U12=180
+        return catRang + 950;
+      }
       function configForMatch(m) {
         const treffer = CONFIG.filter((e) => e.wettbewerb === m.series);
         if (!treffer.length) return null;
@@ -1509,7 +1523,9 @@
             .sort((a, b) => {
               const ta = berlinTag(a.date), tb = berlinTag(b.date);
               if (ta !== tb) return ta < tb ? -1 : 1;
-              return rang(a) - rang(b) || a.date - b.date;
+              // Innerhalb eines Tages (Nutzer-Wunsch 08.11.): LIVE vorne, dann
+              // Mannschafts-Reihenfolge (Herren 1..x, Damen 1..x, Jugend M/W), dann Uhrzeit.
+              return rang(a) - rang(b) || asvTeamRang(a) - asvTeamRang(b) || a.date - b.date;
             });
           // Tages-Überschriften (Nutzer-Wunsch 02.11.): "Heute" / "Morgen"
           // / "So, 08.11." vor dem ersten Spiel jedes Tags.
