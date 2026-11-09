@@ -10,8 +10,8 @@
       ],
       "gegnerBeispiele": [
         "ASV Dachau III",
-        "TUSC Obermenzing",
-        "VSG München/Eiselfing/Unterhaching II"
+        "VSG München/Eiselfing/Unterhaching II",
+        "TUSC Obermenzing"
       ]
     },
     {
@@ -66,6 +66,48 @@
       ]
     },
     {
+      "wettbewerb": "4e072a0c-8b29-4ab3-b771-a881ec13a085",
+      "liga": "Obb - U16 Bezirksklasse 1 weiblich",
+      "spiele": 3,
+      "asvTeams": [
+        "ASV Dachau III"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau III",
+        "SV Heimstetten",
+        "SV Lohhof II"
+      ]
+    },
+    {
+      "wettbewerb": "906589ab-7222-4fbd-9f1b-12b36862517b",
+      "liga": "Obb - U20 Bezirksklasse 1 weiblich",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau III"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau III",
+        "TSV 1862 Neuburg",
+        "TSV Vaterstetten"
+      ]
+    },
+    {
+      "wettbewerb": "9e4b2072-f6a5-4baa-96ff-338f9a6f4cd2",
+      "liga": "Obb - U13 OBB Bezirksliga/Bezirksklasse männlich",
+      "spiele": 3,
+      "asvTeams": [
+        "ASV Dachau",
+        "ASV Dachau II",
+        "ASV Dachau III",
+        "ASV Dachau IV"
+      ],
+      "gegnerBeispiele": [
+        "TSV Herrsching II",
+        "ASV Dachau III",
+        "ASV Dachau"
+      ]
+    },
+    {
       "wettbewerb": "aea4d3ff-56de-403a-b67d-2fba4bf83fb8",
       "liga": "Obb - Bezirksliga West Männer",
       "spiele": 2,
@@ -101,6 +143,32 @@
       "gegnerBeispiele": [
         "SV Esting",
         "ASV Dachau II"
+      ]
+    },
+    {
+      "wettbewerb": "c7a7d183-b089-47c4-a0b8-cf7c625acf4a",
+      "liga": "Obb - U16 Bezirksliga weiblich",
+      "spiele": 3,
+      "asvTeams": [
+        "ASV Dachau II"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau II",
+        "TSV Unterhaching II",
+        "TSV TB München"
+      ]
+    },
+    {
+      "wettbewerb": "d1148f44-a0fb-4476-aca5-a5e3aaa2b478",
+      "liga": "Obb - U20 Kreisliga 2 weiblich",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau IV"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau IV",
+        "SVN München",
+        "TSV Eint. Karlsfeld"
       ]
     },
     {
