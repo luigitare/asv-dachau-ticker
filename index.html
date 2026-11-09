@@ -2589,8 +2589,79 @@
       }, 5000);
     </script>
 
-    <!-- BVV-Schnittstelle: füllt alle .vapi-Container automatisch -->
-    <script src="https://api.volleyball-bayern.de/jsi/volley.js.php?key=ff8671c3-ef58-433d-93c5-0f1e580c4347"></script>
+    <!-- BVV-Schnittstelle: füllt alle .vapi-Container automatisch.
+         Eigener Loader (v64): das offizielle BVV-Widget schickt ALLE Container in
+         EINEM POST - der BVV lehnt mehr als 50 Unteranfragen mit HTTP 400 ab,
+         deshalb stückeln wir selbst in Batches und rendern wie das Widget. -->
+    <script>
+    (function () {
+      var KEY = "ff8671c3-ef58-433d-93c5-0f1e580c4347";
+      var BASE = "https://api.volleyball-bayern.de/jsi/";
+      function elementConfig(e) {
+        var config = e.hasAttribute("data-config") ? (window[e.getAttribute("data-config")] || {}) : {};
+        config.w = e.getAttribute("data-wettbewerb");
+        config.type = e.getAttribute("data-typ");
+        for (var j = 0; j < e.attributes.length; j++) {
+          var aname = e.attributes[j].name;
+          if (aname.indexOf("data-vapi-") === 0) {
+            var value = e.getAttribute(aname);
+            if (value.charAt(0) === "[" && value.slice(-1) === "]") {
+              value = value.slice(1, -1).split(";");
+            }
+            config[aname.replace("data-vapi-", "")] = value;
+          }
+        }
+        return config;
+      }
+      function render(e, html) {
+        e.innerHTML = html;
+        e.classList.add("vapiclass");
+        if (e.hasAttribute("data-callback")) {
+          try { window[e.getAttribute("data-callback")](e); } catch (err) { }
+        }
+      }
+      function sendBatch(elements, done) {
+        var config = { key: KEY, subs: [] };
+        for (var i = 0; i < elements.length; i++) config.subs.push(elementConfig(elements[i]));
+        var xhr = new XMLHttpRequest();
+        xhr.open("POST", BASE + "data.json.php", true);
+        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+        xhr.responseType = "json";
+        xhr.onload = function () {
+          if (xhr.status === 200 && xhr.response && xhr.response.subs) {
+            for (var i = 0; i < elements.length; i++) {
+              if (xhr.response.subs[i]) render(elements[i], xhr.response.subs[i].content);
+            }
+          } else {
+            for (var i2 = 0; i2 < elements.length; i2++) {
+              render(elements[i2], '<div class="vapi-meldung">Daten sind derzeit nicht verfügbar.</div>');
+            }
+          }
+          done();
+        };
+        xhr.onerror = function () { done(); };
+        try { xhr.send("data=" + encodeURIComponent(JSON.stringify(config))); } catch (e2) { done(); }
+      }
+      function init() {
+        var elements = Array.prototype.slice.call(document.getElementsByClassName("vapi"));
+        if (elements.length === 0) return;
+        var css = document.createElement("link");
+        css.href = BASE + "vapi.css?v=1";
+        css.rel = "stylesheet";
+        document.body.appendChild(css);
+        var BATCH = 40; // BVV lehnt >50 Unteranfragen pro POST ab (HTTP 400)
+        var idx = 0;
+        (function next() {
+          if (idx >= elements.length) return;
+          var batch = elements.slice(idx, idx + BATCH);
+          idx += BATCH;
+          sendBatch(batch, next);
+        })();
+      }
+      if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, false);
+      else init();
+    })();
+    </script>
     <!-- PWA: Service Worker registrieren (Offline-Start, Installierbarkeit) -->
     <script>
       if ("serviceWorker" in navigator) {
