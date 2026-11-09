@@ -1977,10 +1977,11 @@
           const tagDatumFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", weekday: "short", day: "2-digit", month: "2-digit" });
           const morgenTag = berlinTag(Date.now() + 24 * 3600000);
           const rang = (m) => (m.an && !m.fi) ? 0 : (!m.fi ? 1 : 2);
-          // Filter wie ASV-Spiele-Liste: ab heute (heute Beendete bleiben)
+          // v63: KEIN "ab heute"-Filter mehr – die Wettbewerbs-Liste zeigt
+          // ALLE Spiele des Wettbewerbs, die im Index-Fenster stehen (±7 Tage,
+          // inkl. vergangene). Chronologisch: aeltester Tag zuerst.
           const spiele = tickerIndex
             .filter((m) => m.series === state.wettb.series)
-            .filter((m) => { const tag = berlinTag(m.date); return tag >= heute && (!m.fi || tag === heute); })
             .sort((a, b) => {
               const ta = berlinTag(a.date), tb = berlinTag(b.date);
               if (ta !== tb) return ta < tb ? -1 : 1;
@@ -2613,5 +2614,6 @@
     </script>
   </body>
 </html>
+
 
 
