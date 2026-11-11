@@ -66,6 +66,19 @@
       ]
     },
     {
+      "wettbewerb": "41e1fc91-a693-4b66-a242-088f50b5cab0",
+      "liga": "U16 Südliga 2 männlich",
+      "spiele": 4,
+      "asvTeams": [
+        "ASV Dachau II"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau II",
+        "MTV München",
+        "TUSC Obermenzing"
+      ]
+    },
+    {
       "wettbewerb": "4e072a0c-8b29-4ab3-b771-a881ec13a085",
       "liga": "Obb - U16 Bezirksklasse 1 weiblich",
       "spiele": 3,
@@ -131,6 +144,19 @@
         "ASV Dachau V",
         "TSV Neufahrn",
         "SV Haimhausen"
+      ]
+    },
+    {
+      "wettbewerb": "c1368ade-ef29-4276-8802-4255b08f0b04",
+      "liga": "U 16 Südliga 1 männlich",
+      "spiele": 4,
+      "asvTeams": [
+        "ASV Dachau"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau",
+        "TSV Unterhaching II",
+        "TSV Mühldorf"
       ]
     },
     {
