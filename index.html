@@ -596,12 +596,12 @@
       // Beim Start: nichts ausgewählt. Falls gespeichert, wird die
       // letzte Auswahl aus dem localStorage wiederhergestellt
       // (überlebt Tab schließen & Browser-Neustart, ohne Cookie-Alarm).
-      let state = { cat: null, grp: null, entry: null, noFilter: false, asvHeute: false, search: false, fremd: null, wettb: null, lastCat: null, lastGrpByCat: {}, lastEntryByGrp: {} };
+      let state = { cat: null, grp: null, entry: null, noFilter: false, asvHeute: false, asvKat: null, search: false, fremd: null, wettb: null, lastCat: null, lastGrpByCat: {}, lastEntryByGrp: {} };
       const STORE_KEY = "asv-dachau-auswahl-v1";
       try {
         const saved = JSON.parse(localStorage.getItem(STORE_KEY) || "null");
         if (saved && typeof saved === "object") state = Object.assign(
-          { cat: null, grp: null, entry: null, noFilter: false, asvHeute: false, search: false, fremd: null, wettb: null, lastCat: null, lastGrpByCat: {}, lastEntryByGrp: {} }, saved
+          { cat: null, grp: null, entry: null, noFilter: false, asvHeute: false, asvKat: null, search: false, fremd: null, wettb: null, lastCat: null, lastGrpByCat: {}, lastEntryByGrp: {} }, saved
         );
       } catch (e) { /* ignorieren */ }
       // Such-Modus nie als Startzustand wiederherstellen (Eingabefeld
@@ -783,7 +783,7 @@
         ev.stopPropagation(); // sonst schliesst der document-Klick-Listener das Menü wieder
         schliesseIntro();
         state.noFilter = false;
-        state.asvHeute = false;
+        state.asvHeute = false; state.asvKat = null;
         state.search = false;
         state.fremd = null;
         state.wettb = null;
@@ -804,6 +804,7 @@
         schliesseIntro();
         state.noFilter = false;
         state.asvHeute = true;
+        state.asvKat = null; // Intro-Punkt "alle ASV-Spiele heute": immer ungefiltert
         state.search = false;
         state.fremd = null;
         state.wettb = null;
@@ -815,7 +816,7 @@
         ev.stopPropagation(); // sonst schliesst der document-Klick-Listener das Menü wieder
         schliesseIntro();
         state.noFilter = false;
-        state.asvHeute = false;
+        state.asvHeute = false; state.asvKat = null;
         state.search = true;
         state.wettb = null;
         suchFokus = true;
@@ -826,7 +827,7 @@
         ev.stopPropagation(); // sonst schliesst der document-Klick-Listener das Menü wieder
         schliesseIntro();
         state.noFilter = true;
-        state.asvHeute = false;
+        state.asvHeute = false; state.asvKat = null;
         state.search = false;
         state.fremd = null;
         state.wettb = null;
@@ -993,7 +994,7 @@
         modeRow.innerHTML = "";
         modeRow.appendChild(chip("ASV Team", !state.noFilter && !state.search && !state.fremd && !state.wettb, () => {
           state.noFilter = false;
-          state.asvHeute = false;
+          state.asvHeute = false; state.asvKat = null;
           state.search = false;
           state.fremd = null; // fremde Mannschaft abwählen
           state.wettb = null; // Wettbewerb-Ansicht verlassen
@@ -1014,7 +1015,7 @@
         }));
         modeRow.appendChild(chip("🔍 Suche", !!(state.search || state.fremd || state.wettb), () => {
           state.noFilter = false;
-          state.asvHeute = false;
+          state.asvHeute = false; state.asvKat = null;
           state.wettb = null;
           state.search = true;
           suchFokus = true; // Suchfeld direkt fokussieren (Tastatur öffnet sich)
@@ -1023,7 +1024,7 @@
         }));
         modeRow.appendChild(chip("ohne Filter", !!state.noFilter, () => {
           state.noFilter = true;
-          state.asvHeute = false;
+          state.asvHeute = false; state.asvKat = null;
           state.search = false;
           state.fremd = null;
           state.wettb = null;
@@ -1053,12 +1054,16 @@
         catRow.innerHTML = '<div class="rowlabel">1 · Bereich</div>';
         // "Alle ASV-Spiele" bekommt ab v44 eine EIGENE Zeile ueber den
         // Bereichs-Chips (Nutzer-Wunsch 03.11.: 1. Zeile Alle ASV-Spiele,
-        // 2. Zeile Herren/Damen/Jugend m/w).
+        // 2. Zeile Herren/Damen/Jugend m/w). Seit v66 stehen "Alle
+        // maennlich" (Herren + Jugend m) und "Alle weiblich" (Damen +
+        // Jugend w) daneben (Nutzer-Wunsch 12.11.) – state.asvKat
+        // schraenkt die Liste auf den Bereich ein.
         const alleZeile = document.createElement("div");
         alleZeile.className = "chipzeile";
-        alleZeile.appendChild(chip("Alle ASV-Spiele", !!state.asvHeute, () => {
+        alleZeile.appendChild(chip("Alle ASV-Spiele", !!state.asvHeute && !state.asvKat, () => {
           state.noFilter = false;
           state.asvHeute = true;
+          state.asvKat = null;
           state.search = false;
           state.fremd = null;
           state.wettb = null;
@@ -1066,11 +1071,33 @@
           menuOpen = false;
           renderAll();
         }, heuteSpiele.length));
+        alleZeile.appendChild(chip("Alle männlich", !!state.asvHeute && state.asvKat === "m", () => {
+          state.noFilter = false;
+          state.asvHeute = true;
+          state.asvKat = "m";
+          state.search = false;
+          state.fremd = null;
+          state.wettb = null;
+          state.tab = "ticker";
+          menuOpen = false;
+          renderAll();
+        }, asvHeuteCount(heuteSpiele, (t) => t.cat === "h" || t.cat === "jm")));
+        alleZeile.appendChild(chip("Alle weiblich", !!state.asvHeute && state.asvKat === "w", () => {
+          state.noFilter = false;
+          state.asvHeute = true;
+          state.asvKat = "w";
+          state.search = false;
+          state.fremd = null;
+          state.wettb = null;
+          state.tab = "ticker";
+          menuOpen = false;
+          renderAll();
+        }, asvHeuteCount(heuteSpiele, (t) => t.cat === "d" || t.cat === "jw")));
         catRow.appendChild(alleZeile);
         CATS.forEach((c) => {
           catRow.appendChild(chip(c.label, state.cat === c.id && !state.asvHeute, () => {
             state.noFilter = false; // ASV-Auswahl aktiv -> Normalmodus
-            state.asvHeute = false;
+            state.asvHeute = false; state.asvKat = null;
             state.search = false;
             state.fremd = null;
             state.wettb = null;
@@ -1517,8 +1544,17 @@
           const spiele = tickerIndex
             .filter((m) => {
               const tag = berlinTag(m.date);
-              return tag >= heute && (!m.fi || tag === heute) &&
-                ((m.t1r && m.t1r.includes("ASV Dachau")) || (m.t2r && m.t2r.includes("ASV Dachau")));
+              if (!(tag >= heute && (!m.fi || tag === heute) &&
+                ((m.t1r && m.t1r.includes("ASV Dachau")) || (m.t2r && m.t2r.includes("ASV Dachau"))))) return false;
+              // v66: "Alle maennlich"/"Alle weiblich" – Filter auf den
+              // Bereich (Herren+jm bzw. Damen+jw) per CONFIG-Zuordnung.
+              if (state.asvKat) {
+                const t = configForMatch(m);
+                if (!t) return false;
+                if (state.asvKat === "m") return t.cat === "h" || t.cat === "jm";
+                return t.cat === "d" || t.cat === "jw";
+              }
+              return true;
             })
             .sort((a, b) => {
               const ta = berlinTag(a.date), tb = berlinTag(b.date);
@@ -1591,7 +1627,7 @@
                   : "Zur Mannschaft: Spielplan & Ticker ihrer Liga öffnen";
               card.onclick = () => {
                 state.noFilter = false;
-                state.asvHeute = false;
+                state.asvHeute = false; state.asvKat = null;
                 state.wettb = null;
                 state.fremd = null;
                 state.cat = t.cat; state.grp = t.grp; state.entry = t.idx;
@@ -1944,7 +1980,7 @@
         // Wettbewerbe tauchen dort mit 🏆 auf, TeamId leer.
         merkFremd({ name: w.name, klasse: "", series: w.series, teamId: "", liga: w.name, wettb: true });
         state.noFilter = false;
-        state.asvHeute = false;
+        state.asvHeute = false; state.asvKat = null;
         state.search = false;
         state.fremd = null;
         state.wettb = { series: w.series, name: w.name };
@@ -2039,7 +2075,7 @@
               // ASV-Spiel: identische Logik wie ASV-Spiele-Liste
               card.onclick = () => {
                 state.noFilter = false;
-                state.asvHeute = false;
+                state.asvHeute = false; state.asvKat = null;
                 state.wettb = null;
                 state.fremd = null;
                 state.cat = t.cat; state.grp = t.grp; state.entry = t.idx;
@@ -2166,7 +2202,7 @@
       function fremdWaehlen(f) {
         merkFremd(f);
         state.noFilter = false;
-        state.asvHeute = false;
+        state.asvHeute = false; state.asvKat = null;
         state.search = false;
         state.fremd = f;
         state.wettb = null;
@@ -2270,7 +2306,7 @@
             if (t) {
               // ASV-Team: auf den gewohnten Mannschaftsfilter umleiten
               state.noFilter = false;
-              state.asvHeute = false;
+              state.asvHeute = false; state.asvKat = null;
               state.search = false;
               state.fremd = null;
               state.wettb = null;
@@ -2382,7 +2418,7 @@
       // letzten Zustand wieder her. Menü schließen / Intro gilt dabei
       // bewusst NICHT als "Vorwärts"-Schritt (navDismissNext).
       const navSnap = () => JSON.stringify([
-        menuOpen, state.search, state.fremd, state.wettb, state.asvHeute,
+        menuOpen, state.search, state.fremd, state.wettb, state.asvHeute, state.asvKat,
         state.noFilter, state.cat, state.grp, state.entry, state.tab || "ticker"
       ]);
       let navStack = [];
@@ -2406,7 +2442,7 @@
         const s = JSON.parse(navStack.pop());
         navDismissNext = true; // Wiederherstellen ist kein neuer Schritt
         menuOpen = s[0]; state.search = s[1]; state.fremd = s[2]; state.wettb = s[3];
-        state.asvHeute = s[4]; state.noFilter = s[5]; state.cat = s[6]; state.grp = s[7]; state.entry = s[8]; state.tab = s[9];
+        state.asvHeute = s[4]; state.asvKat = s[5] || null; state.noFilter = s[6]; state.cat = s[7]; state.grp = s[8]; state.entry = s[9]; state.tab = s[10];
         renderAll();
       });
 
@@ -2422,7 +2458,9 @@
         if (state.noFilter) {
           menuBtnLabel.textContent = "🌐 ohne Filter";
         } else if (state.asvHeute) {
-          menuBtnLabel.textContent = "🔥 ASV-Spiele ab heute";
+          menuBtnLabel.textContent = state.asvKat === "m" ? "🔥 ASV-Spiele männlich ab heute"
+            : state.asvKat === "w" ? "🔥 ASV-Spiele weiblich ab heute"
+            : "🔥 ASV-Spiele ab heute";
         } else if (state.wettb) {
           menuBtnLabel.textContent = "🏆 " + (ligaName(state.wettb.series) || state.wettb.name || "Wettbewerb");
         } else if (state.search) {
@@ -2489,13 +2527,13 @@
         const team = p.get("team");
         const fr = p.get("fremd");
         if (q) {
-          state.noFilter = false; state.asvHeute = false;
+          state.noFilter = false; state.asvHeute = false; state.asvKat = null;
           state.search = true; state.fremd = null; state.wettb = null;
           suchText = q; menuOpen = true;
         } else if (team) {
           const t = CONFIG.find((e) => e.wettbewerb === team);
           if (t) {
-            state.noFilter = false; state.asvHeute = false; state.search = false; state.fremd = null; state.wettb = null;
+            state.noFilter = false; state.asvHeute = false; state.asvKat = null; state.search = false; state.fremd = null; state.wettb = null;
             state.cat = t.cat; state.grp = t.grp; state.entry = t.idx;
             rememberEntry(t.cat, t.grp, t.idx);
             state.tab = "ticker";
@@ -2505,7 +2543,7 @@
           const teile = fr.split("|");
           if (teile[0] && teile[1]) {
             const name = teile.length > 2 ? decodeURIComponent(teile.slice(2).join("|")) : "Mannschaft";
-            state.noFilter = false; state.asvHeute = false; state.search = false;
+            state.noFilter = false; state.asvHeute = false; state.asvKat = null; state.search = false;
             state.cat = null; state.grp = null; state.entry = null;
             state.fremd = { name: name, klasse: "", series: teile[0], teamId: teile[1], liga: "" };
             state.wettb = null;
