@@ -425,7 +425,7 @@
         </div>
         <div class="intropunkt" id="introP-heute">
           <span class="ic">🔥</span>
-          <div><b>„Alle ASV-Spiele"</b><span>Alle Dachau-Spiele ab heute auf einen Blick – im Ticker aufrufbar</span></div>
+          <div><b>„Alle ASV"</b><span>Alle Dachau-Spiele ab heute auf einen Blick – im Ticker aufrufbar</span></div>
         </div>
         <div class="intropunkt" id="introP-suche">
           <span class="ic">🔍</span>
@@ -1060,7 +1060,7 @@
         // schraenkt die Liste auf den Bereich ein.
         const alleZeile = document.createElement("div");
         alleZeile.className = "chipzeile";
-        alleZeile.appendChild(chip("Alle ASV-Spiele", !!state.asvHeute && !state.asvKat, () => {
+        alleZeile.appendChild(chip("Alle ASV", !!state.asvHeute && !state.asvKat, () => {
           state.noFilter = false;
           state.asvHeute = true;
           state.asvKat = null;
@@ -2354,7 +2354,7 @@
               + '<b>' + escHtml(w.name) + '</b>'
               + '<span class="count">· ' + w.ms.length + (w.ms.length === 1 ? " Spiel" : " Spiele") + '</span>'
               + '<span class="chev">▶</span>';
-            head.title = "Wettbewerb öffnen: Spiel-Übersicht wie bei „Alle ASV-Spiele“";
+            head.title = "Wettbewerb öffnen: Spiel-Übersicht wie bei „Alle ASV“";
             head.onclick = () => wettbWaehlen({ series: sid, name: w.name });
             resEl.appendChild(head);
           });
