@@ -905,10 +905,9 @@
         return APP_URL;
       }
       function shareDaten() {
-        if (state.search && suchText.trim()) return { title: "ASV Ticker", text: "🏐 Spiele von „" + suchText.trim() + "“ – Live-Ticker & Ergebnisse:", url: deepLink() };
-        if (state.fremd) return { title: "ASV Ticker", text: "🏐 " + state.fremd.name + " – Live-Ticker & Ergebnisse:", url: deepLink() };
-        if (state.entry !== null && CONFIG[state.entry]) return { title: "ASV Ticker", text: "🏐 ASV Dachau " + CONFIG[state.entry].grp + " – Spielplan, Ergebnisse & Live-Ticker:", url: deepLink() };
-        return { title: "ASV Ticker", text: "🏐 Volleyball-Ergebnisse & Live-Ticker aller BVV-Teams – vom ASV Dachau:", url: APP_URL };
+        // Nutzer-Wunsch 12.11.: Teilen-Text IMMER gleich, egal aus welcher
+        // Ansicht geteilt wird – nur die URL ist der passende Deep-Link.
+        return { title: "ASV Ticker", text: "🏐 ASV Ticker – Spielplan, Ergebnisse und Live-Ticker:", url: deepLink() };
       }
       floatShare.onclick = (ev) => {
         ev.stopPropagation();
