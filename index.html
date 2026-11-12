@@ -991,7 +991,7 @@
       const teamRowsLabel = document.getElementById("teamRowsLabel");
       function renderModeRow() {
         modeRow.innerHTML = "";
-        modeRow.appendChild(chip("ASV Team", !state.noFilter && !state.asvHeute && !state.search && !state.fremd && !state.wettb, () => {
+        modeRow.appendChild(chip("ASV Team", !state.noFilter && !state.search && !state.fremd && !state.wettb, () => {
           state.noFilter = false;
           state.asvHeute = false;
           state.search = false;
