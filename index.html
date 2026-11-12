@@ -240,16 +240,21 @@
       /* Heute-Zeile: Spiele des gewaehlten Wettbewerbs an diesem Tag */
       #heuteRow { margin: 0 0 .55rem; position: relative; }
       #heuteRow .rowlabel2 { margin: 0 0 .25rem; }
-      /* Scroll-Pfeil Heute-Zeile (v69): blauer ›-Knopf am rechten Rand,
-         wenn weitere Karten rechts liegen. Klick scrollt die Zeile,
-         am Zeilenende verschwindet er (JS in renderHeuteRow). */
-      .hc-pfeil {
-        position: absolute; right: .1rem; z-index: 6;
-        width: 1.7rem; height: 1.7rem; border-radius: 999px; border: none;
-        background: #1e3a8a; color: #fff; font-size: 1rem; line-height: 1;
-        cursor: pointer; display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 1px 6px rgba(0, 0, 0, .3);
-        transform: translateY(-50%);
+      /* Scroll-Hinweis Heute-Zeile (v70, Nutzer-Wunsch 12.11.):
+         (1) Der Scrollbalken der Karten-Zeile ist PERMANENT sichtbar
+             und dezent blau statt grau. (iOS/Safari ignoriert die
+             Individualisierung - dort bleibt es beim Wisch-Balken.)
+         (2) Rechter Rand: dezenter Verlauf in den App-Hintergrund,
+             solange noch Karten folgen (Klasse scrollmehr, JS setzt
+             sie in renderHeuteRow bei Zeilen-Overflow). */
+      .heutecards { scrollbar-width: thin; scrollbar-color: #93c5fd #e5e7eb; }
+      .heutecards::-webkit-scrollbar { height: .35rem; }
+      .heutecards::-webkit-scrollbar-track { background: #e5e7eb; border-radius: 999px; }
+      .heutecards::-webkit-scrollbar-thumb { background: #93c5fd; border-radius: 999px; }
+      #heuteRow.scrollmehr::after {
+        content: ""; position: absolute; top: 0; bottom: .3rem; right: 0;
+        width: 2.2rem; pointer-events: none; z-index: 5;
+        background: linear-gradient(to right, rgba(244, 246, 248, 0), #f4f6f8);
       }
       /* Kein Spiel im ±7-Tage-Fenster: dezente Info-Zeile ueber dem Ticker */
       .keinspiel {
@@ -1377,6 +1382,7 @@
       function renderHeuteRow() {
         heuteRow.innerHTML = "";
         heuteRow.style.display = "none";
+        heuteRow.classList.remove("scrollmehr");
         if ((state.entry === null && !state.fremd) || state.noFilter || state.asvHeute || state.wettb || state.search) return;
         if (!tickerIndex || !tickerIndex.length) return;
         const fr = state.fremd;
@@ -1481,29 +1487,11 @@
         });
         heuteRow.appendChild(wrap);
         heuteRow.style.display = "block";
-        // Scroll-Pfeil (v69, Nutzer-Wunsch "Variante 3"): blauer ›-Knopf
-        // am rechten Rand, signalisiert dass weitere Karten nach rechts
-        // scrollbar sind. Klick scrollt ~eine Kartenbreite weiter, am
-        // Zeilenende verschwindet der Knopf. Nur wenn die Zeile wirklich
-        // ueberlaeuft (eine Karte passt nicht mehr ins Display).
-        if (wrap.scrollWidth > wrap.clientWidth + 4) {
-          const pf = document.createElement("button");
-          pf.className = "hc-pfeil";
-          pf.innerHTML = "›";
-          pf.title = "Weitere Spiele anzeigen";
-          pf.onclick = (ev) => {
-            ev.stopPropagation();
-            wrap.scrollBy({ left: wrap.clientWidth * 0.8, behavior: "smooth" });
-          };
-          const pfUpd = () => {
-            pf.style.display = (wrap.scrollLeft >= wrap.scrollWidth - wrap.clientWidth - 4) ? "none" : "flex";
-          };
-          wrap.addEventListener("scroll", pfUpd);
-          pfUpd();
-          heuteRow.appendChild(pf);
-          // vertikal mittig auf die Karten-Zeile legen
-          pf.style.top = (wrap.offsetTop + wrap.offsetHeight / 2) + "px";
-        }
+        // Scroll-Hinweis (v70, Nutzer-Wunsch 12.11.): wenn weitere
+        // Karten rechts liegen, blendet der rechte Rand in den
+        // App-Hintergrund (Variante 2 aus der Vorschau). Der dezent
+        // blaue Scrollbalken selbst ist reines CSS (siehe .heutecards).
+        heuteRow.classList.toggle("scrollmehr", wrap.scrollWidth > wrap.clientWidth + 4);
         // Falls der Ticker zuvor ausgeblendet war (z. B. Index-Update
         // hat jetzt Spiele fuer das Team): Ansicht wiederherstellen.
         showEntry();
