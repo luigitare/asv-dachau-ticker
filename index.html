@@ -33,6 +33,10 @@
       .asvcard .klasse { font-weight: 700; color: #1e3a8a; font-size: .72rem; }
       .asvcard .hc-zeit { font-weight: 700; color: #111827; font-size: .72rem; }
       .asvcard b { font-weight: 600; color: #374151; }
+      /* Lange Namen: EINE Zeile mit "…" (v71, Nutzer-Wunsch 12.11.):
+         Paarung/Liga schneiden ab, die vollen Namen stehen als
+         Tooltip auf der Karte. Karten bleiben kompakt in H/B. */
+      .asvcard .paarung { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .asvcard b.asv { color: #1e3a8a; }
       /* geplant: nicht klickbar (noch keine Detail-URL) */
       .asvcard.inaktiv { cursor: default; }
@@ -67,9 +71,9 @@
          kleine Zeile, bricht um, wenn der Name lang ist. */
       /* Liga-Name auf den Spiel-Karten (v49): dezent grau als Kontext-
          Zeile – die Paarung ist das Entscheidende und steht fett darunter. */
-      .hcliga { font-size: .7rem; color: #6b7280; font-weight: 500; white-space: normal; min-width: 0; }
+      .hcliga { font-size: .7rem; color: #6b7280; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
       /* Wettbewerbs-Suche: lange Liga-Namen duerfen in der Karte umbrechen */
-      .suchcards .asvcard b { white-space: normal; }
+      .suchcards .asvcard b { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
       .suchcards { display: flex; flex-direction: column; gap: .4rem; }
       /* Gruppierung: eine Karte pro Mannschaft, Spiel-Anzahl + Pfeil */
       .asvcard .count { font-size: .72rem; color: #6b7280; }
@@ -216,6 +220,8 @@
         background: #1e3a8a; color: #fff; font-size: .55rem; line-height: 1;
       }
       .tb-nr { background: #e0e7ff; color: #1e3a8a; border-radius: .35rem; padding: 0 .38rem; font-size: .7rem; font-weight: 800; flex: 0 0 auto; }
+      /* v71: lange Turnier-Paarungen einzeilig mit "…" abschneiden */
+      .tb-paarung { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
       .tb-uhr { color: #6b7280; font-size: .74rem; flex: 0 0 auto; }
       .tb-ph { color: #9ca3af; font-style: italic; font-weight: 400; }
       .tb-res { font-weight: 800; margin-left: auto; flex: 0 0 auto; }
@@ -286,7 +292,7 @@
          v49: Paarung FETT + minimal groesser – Hierarchie: Paarung
          springt ins Auge, Liga oben dezent, Datum schwarz normal. */
       .hc-geit { display: flex; align-items: baseline; gap: .3rem; }
-      .hc-geit b { font-weight: 800; color: #111827; font-size: .84rem; white-space: normal; min-width: 0; }
+      .hc-geit b { font-weight: 800; color: #111827; font-size: .84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
       .hc-geit b.asv { color: #1e3a8a; }
       .hc-geit .erg { margin-left: auto; flex: 0 0 auto; font-weight: 800; }
       .heutecard:hover { border-color: #2563eb; background: #eff6ff; }
@@ -1463,9 +1469,9 @@
             (liga ? '<span class="hcliga">' + escHtml(liga) + '</span>' : "") +
             '<span class="hc-geit"><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b><span class="hc-vs">–</span><b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b>' + (ergFertig ? '<span class="erg">' + ergFertig + '</span>' : "") + '</span>';
           if (live || fertig) {
-            card.title = live
+            card.title = m.t1r + " – " + m.t2r + (liga ? " (" + liga + ")" : "") + " · " + (live
               ? "Dieses Spiel läuft gerade – Live-Ticker öffnen (erneut antippen = Pin entfernen)"
-              : "Beendet – Ticker mit dem Spielverlauf öffnen (erneut antippen = Pin entfernen)";
+              : "Beendet – Ticker mit dem Spielverlauf öffnen (erneut antippen = Pin entfernen)");
             card.onclick = () => {
               state.tab = "ticker";
               saveState();
@@ -1481,7 +1487,7 @@
               renderAll();
             };
           } else {
-            card.title = "Klickbar, sobald das Spiel im Ticker startet";
+            card.title = m.t1r + " – " + m.t2r + (liga ? " (" + liga + ")" : "") + " · Klickbar, sobald das Spiel im Ticker startet";
           }
           wrap.appendChild(card);
         });
@@ -1637,15 +1643,15 @@
               ? ((m.sp1 !== undefined && m.sp2 !== undefined) ? '<span class="erg">' + m.sp1 + ":" + m.sp2 + '</span>' : "") + '<span class="hc-zeit">✅</span>'
               : "";
             const paarung =
-              '<span><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b></span>';
+              '<span class="paarung"><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b></span>';
             card.innerHTML = '<span class="klasse">' + escHtml(klasse) + '</span>' + zeitHtml + paarung + ergHtml
               + (liga ? '<span class="hcliga">' + escHtml(liga) + '</span>' : '');
             if (t) {
-              card.title = live
+              card.title = m.t1r + " – " + m.t2r + (liga ? " (" + liga + ")" : "") + " · " + (live
                 ? "Zum Live-Ticker: Mannschaftsfilter wechseln + Spiel anpinnen"
                 : fertig
                   ? "Beendet – Ticker mit dem Spielverlauf öffnen"
-                  : "Zur Mannschaft: Spielplan & Ticker ihrer Liga öffnen";
+                  : "Zur Mannschaft: Spielplan & Ticker ihrer Liga öffnen");
               card.onclick = () => {
                 state.noFilter = false;
                 state.asvHeute = false; state.asvKat = null;
@@ -1670,7 +1676,7 @@
                 renderAll();
               };
             } else {
-              card.title = "Klickbar, sobald die Mannschaft zugeordnet ist";
+              card.title = m.t1r + " – " + m.t2r + " · Klickbar, sobald die Mannschaft zugeordnet ist";
             }
             wrap.appendChild(card);
           });
@@ -1880,13 +1886,14 @@
           b.className = "tb-spiel" + (klick ? " klick" : "");
           b.innerHTML = '<span class="tb-nr">' + m._tbNr + '</span>'
             + '<span class="tb-uhr">' + escHtml(datumText(m)) + "</span>"
-            + "<span>" + tbTeamHtml(m.t1r) + " – " + tbTeamHtml(m.t2r) + "</span>"
+            + "<span class=\"tb-paarung\">" + tbTeamHtml(m.t1r) + " – " + tbTeamHtml(m.t2r) + "</span>"
             + (live
               ? '<span class="tb-res tb-live">🔴 LIVE</span>'
               : (m.fi ? '<span class="tb-res">' + (m.sp1 !== undefined ? m.sp1 + ":" + m.sp2 : "–") + "</span>" : ""))
             + (klick ? '<span class="tb-go" aria-hidden="true">▶</span>' : "");
+          b.title = m.t1r + " – " + m.t2r;
           if (klick) b.onclick = () => { state.wettb.detail = m.id; saveState(); renderAll(); };
-          else b.title = "Geplant – der Ticker ist ab Spielbeginn aufrufbar";
+          else b.title += " · Geplant – der Ticker ist ab Spielbeginn aufrufbar";
           return b;
         };
         // Kopf + Hinweis
@@ -2089,7 +2096,7 @@
               ? ((m.sp1 !== undefined && m.sp2 !== undefined) ? '<span class="erg">' + m.sp1 + ":" + m.sp2 + '</span>' : "") + '<span class="hc-zeit">✅</span>'
               : "";
             const paarung =
-              '<span><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b></span>';
+              '<span class="paarung"><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b></span>';
             card.innerHTML = zeitHtml + paarung + ergHtml;
             const u = tickerDetailUrl(m);
             if (t) {
@@ -2322,7 +2329,7 @@
             + '<b' + (name.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(name) + '</b>'
             + '<span class="count">· ' + ms.length + (ms.length === 1 ? " Spiel" : " Spiele") + '</span>'
             + '<span class="chev">▶</span>';
-          head.title = "Mannschaft auswählen: Live-Ticker dieser Mannschaft zeigen";
+          head.title = name + " · Mannschaft auswählen: Live-Ticker dieser Mannschaft zeigen";
           head.onclick = () => {
             if (t) {
               // ASV-Team: auf den gewohnten Mannschaftsfilter umleiten
@@ -2375,7 +2382,7 @@
               + '<b>' + escHtml(w.name) + '</b>'
               + '<span class="count">· ' + w.ms.length + (w.ms.length === 1 ? " Spiel" : " Spiele") + '</span>'
               + '<span class="chev">▶</span>';
-            head.title = "Wettbewerb öffnen: Spiel-Übersicht wie bei „Alle ASV“";
+            head.title = w.name + " · Wettbewerb öffnen: Spiel-Übersicht wie bei „Alle ASV“";
             head.onclick = () => wettbWaehlen({ series: sid, name: w.name });
             resEl.appendChild(head);
           });
