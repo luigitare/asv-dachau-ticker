@@ -4,7 +4,7 @@
     {
       "wettbewerb": "00572b76-b0a6-4730-9b69-965ef2c22335",
       "liga": "Obb - Bezirksliga West Frauen",
-      "spiele": 2,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau III"
       ],
@@ -60,9 +60,9 @@
         "ASV Dachau II"
       ],
       "gegnerBeispiele": [
-        "TSV Grafing II",
         "ASV Dachau II",
-        "MTV München"
+        "MTV München",
+        "SV Schwaig II"
       ]
     },
     {
@@ -162,13 +162,14 @@
     {
       "wettbewerb": "c6bfb1ea-ab19-43cc-b864-ae48865c3c22",
       "liga": "Landesliga Süd-West Frauen",
-      "spiele": 1,
+      "spiele": 2,
       "asvTeams": [
         "ASV Dachau II"
       ],
       "gegnerBeispiele": [
         "SV Esting",
-        "ASV Dachau II"
+        "ASV Dachau II",
+        "Lechrain Volleys"
       ]
     },
     {
@@ -200,13 +201,14 @@
     {
       "wettbewerb": "d14a83b4-3109-4be5-835b-e56282234a5b",
       "liga": "Obb - Bezirksklasse 1 Frauen",
-      "spiele": 1,
+      "spiele": 3,
       "asvTeams": [
         "ASV Dachau IV"
       ],
       "gegnerBeispiele": [
         "ASV Dachau IV",
-        "SG Amper Volleys II"
+        "SG Amper Volleys II",
+        "SG ESV Ingolstadt / TSV Kösching"
       ]
     },
     {
@@ -225,7 +227,7 @@
     {
       "wettbewerb": "ea2fc469-c865-4b9b-a457-eb9b4debced0",
       "liga": "Dritte Liga Ost Frauen",
-      "spiele": 3,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau"
       ],
