@@ -1461,12 +1461,18 @@
         const tagDatumFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", weekday: "short", day: "2-digit", month: "2-digit" });
         const heute = berlinTag(Date.now());
         const pinKey = fr ? fremdPinKey(fr) : t.idx;
+        // v73 (Nutzer-Wunsch 14.11.): Die gepinnte Karte ist nur BLAU,
+        // wenn auch wirklich der Live-Ticker-Reiter aktiv ist. In
+        // Spielplan/Tabelle wirkt das Blau sonst wie "selektiert".
+        // Der Pin selbst bleibt erhalten (nur Optik). Reine Ticker-
+        // Ansichten ohne Reiter (fremd / externalUrl) zeigen immer blau.
+        const tickerSichtbar = fr ? true : !!((state.tab || "ticker") === "ticker" || (t && t.externalUrl));
         const pinZu = (url) => { if (fr) { if (t._pinTo) t._pinTo(url); } else if (t.el && t.el._pinTo) t.el._pinTo(url); };
         const wrap = document.createElement("div");
         wrap.className = "heutecards";
         spiele.forEach((m) => {
           const url = tickerDetailUrl(m);
-          const pinAktiv = pinOf(pinKey) === url;
+          const pinAktiv = tickerSichtbar && pinOf(pinKey) === url;
           // Zustaende (Nutzer-Regel 29.10./30.10.): geplant = unklickbar,
           // ANGELEGT = rot & klickbar (i.d.R. schon beim Aufwaermen),
           // beendet = klickbar fuer die Ticker-Vergangenheit.
