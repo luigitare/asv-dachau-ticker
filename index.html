@@ -138,15 +138,17 @@
       }
       .chip.active { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
       /* Heute-Zahl an Chips (Nutzer-Wunsch 02.11., Position 08.11.):
-         kleines rotes Badge = ASV-Spiele heute in diesem Bereich /
-         dieser Mannschaft. Ueberlappt die obere linke Chip-Ecke
-         (App-Badge-Stil, Nutzer-Wunsch 08.11.). Nur sichtbar wenn > 0. */
+         kleines Badge = ASV-Spiele heute in diesem Bereich / dieser
+         Mannschaft. Ueberlappt die obere linke Chip-Ecke. Nur sichtbar
+         wenn > 0. v74 (Nutzer-Wunsch 14.11.): DEZENT als Soft-Pill –
+         hellroter Grund, dunkelrote Zahl statt knallrot/weiss, etwas
+         kleiner und schmaler. */
       .chipbadge {
-        position: absolute; top: -.5rem; left: -.5rem;
-        min-width: 1.05rem; padding: 0 .28rem; text-align: center;
-        background: #dc2626; color: #fff; border: 2px solid #f5f6f8;
-        border-radius: 999px; font-size: .68rem; font-weight: 700;
-        line-height: 1.25; z-index: 5; box-sizing: content-box;
+        position: absolute; top: -.45rem; left: -.45rem;
+        min-width: .95rem; padding: 0 .22rem; text-align: center;
+        background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca;
+        border-radius: 999px; font-size: .62rem; font-weight: 700;
+        line-height: 1.2; z-index: 5; box-sizing: content-box;
       }
 
       .panel { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .28s ease; }
