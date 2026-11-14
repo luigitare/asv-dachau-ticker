@@ -1150,6 +1150,23 @@
         });
       }
 
+      // (v72, Nutzer-Wunsch 14.11.): Laeuft gerade ein Spiel dieser
+      // Mannschaft LIVE (heute)? Gibt das frueheste zurueck, sonst null.
+      // teamId matcht ueber alle Wettbewerbe (Liga + Pokal), ohne
+      // teamId Fallback ueber den Teamnamen (wie istTeam in der
+      // Heute-Zeile).
+      function liveSpielHeute(e) {
+        if (!tickerIndex || !tickerIndex.length) return null;
+        const heuteT = berlinTag(Date.now());
+        const tid = e.teamId || "";
+        const nName = normTeam(e.team);
+        const treffer = tickerIndex.filter((m) =>
+          (m.an && !m.fi && berlinTag(m.date) === heuteT) &&
+          (tid ? (m.t1i === tid || m.t2i === tid)
+               : (normTeam(m.t1r) === nName || normTeam(m.t2r) === nName)));
+        treffer.sort((a, b) => a.date - b.date);
+        return treffer[0] || null;
+      }
       function renderEntryRow() {
         const heuteSpiele = asvHeuteSpiele();
         entryRow.innerHTML = '<div class="rowlabel">3 · Team / Wettbewerb</div>';
@@ -1161,6 +1178,15 @@
             state.fremd = null;
             state.wettb = null;
             rememberEntry(state.cat, state.grp, e.idx);
+            // (v72, Nutzer-Wunsch 14.11.): Laeuft ein Spiel dieser
+            // Mannschaft gerade LIVE? Dann direkt vorauswaehlen - Pin
+            // aufs Spiel setzen, der Ticker oeffnet es. Ein bereits
+            // gesetzter Pin wird NICHT ueberschrieben; ohne LIVE-Spiel
+            // bleibt alles wie bisher.
+            if (!pinOf(e.idx)) {
+              const ls = liveSpielHeute(e);
+              if (ls && e.el && e.el._pinTo) e.el._pinTo(tickerDetailUrl(ls));
+            }
             renderAll(); // Menü bleibt offen (Schließen nur explizit)
           }, heuteSpiele.filter((m) => configForMatch(m) === e).length));
         });
@@ -1403,9 +1429,16 @@
         const istTeam = (m) =>
           (tid ? (m.t1i === tid || m.t2i === tid)
                : (normTeam(m.t1r) === nName || normTeam(m.t2r) === nName));
-        // Reihenfolge (Nutzer-Wunsch 31.10.): LIVE-Spiele IMMER vorne,
-        // danach geplante Spiele (aufsteigend), beendete ganz hinten.
-        const rang = (m) => (m.an && !m.fi) ? 0 : (!m.fi ? 1 : 2);
+        // Reihenfolge (Nutzer-Wunsch 14.11.): LIVE-Spiele vorne, dann
+        // alles von HEUTE (kommende aufsteigend, danach die heutigen
+        // beendeten), erst danach die kommenden Tage - beendete Spiele
+        // vergangener Tage ganz ans Ende.
+        const heuteSort = berlinTag(Date.now());
+        const rang = (m) => {
+          if (m.an && !m.fi) return 0;
+          if (berlinTag(m.date) === heuteSort) return m.fi ? 2 : 1;
+          return m.fi ? 4 : 3;
+        };
         const spiele = tickerIndex.filter(istTeam).sort((a, b) => rang(a) - rang(b) || a.date - b.date);
         if (!spiele.length) {
           // Kein Spiel der gewaehlten Mannschaft im ±7-Tage-Fenster:
@@ -1561,9 +1594,10 @@
           const heute = berlinTag(Date.now());
           const zeitFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" });
           const tagDatumFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", weekday: "short", day: "2-digit", month: "2-digit" });
-          // Sortierung (Nutzer-Wunsch 02.11.): Tage aufsteigend (heute,
-          // morgen, ...), INNERHALB eines Tages LIVE vorne, dann geplant
-          // aufsteigend, beendete hinten.
+          // Sortierung (Nutzer-Wunsch 14.11.): LIVE vorne (global),
+          // dann die heutigen Spiele (kommende aufsteigend, danach die
+          // beendeten), erst danach die kommenden Tage chronologisch
+          // (innerhalb eines Tages Mannschafts-Reihenfolge, v62).
           const rang = (m) => (m.an && !m.fi) ? 0 : (!m.fi ? 1 : 2);
           // Filter (Nutzer-Wunsch 02.11.): ab HEUTE inklusive - beendete
           // Spiele aelterer Tage fallen raus, heute Beendete bleiben.
@@ -1584,11 +1618,21 @@
               return true;
             })
             .sort((a, b) => {
+              const la = rang(a) === 0, lb = rang(b) === 0;
+              if (la !== lb) return la ? -1 : 1; // LIVE (v72) ganz vorne
+              if (la && lb) return a.date - b.date; // mehrere LIVE: fruehestes zuerst
               const ta = berlinTag(a.date), tb = berlinTag(b.date);
+              const ha = ta === heute, hb = tb === heute;
+              if (ha && hb) {
+                // innerhalb heute (v72): kommende aufsteigend, dann die beendeten
+                if (!!a.fi !== !!b.fi) return a.fi ? 1 : -1;
+                return a.date - b.date;
+              }
+              if (ha !== hb) return ha ? -1 : 1;
               if (ta !== tb) return ta < tb ? -1 : 1;
-              // Innerhalb eines Tages (Nutzer-Wunsch 08.11.): LIVE vorne, dann
-              // Mannschafts-Reihenfolge (Herren 1..x, Damen 1..x, Jugend M/W), dann Uhrzeit.
-              return rang(a) - rang(b) || asvTeamRang(a) - asvTeamRang(b) || a.date - b.date;
+              // Innerhalb eines Tages (Nutzer-Wunsch 08.11.): Mannschafts-
+              // Reihenfolge (Herren 1..x, Damen 1..x, Jugend M/W), dann Uhrzeit.
+              return asvTeamRang(a) - asvTeamRang(b) || a.date - b.date;
             });
           // Tages-Überschriften (Nutzer-Wunsch 02.11.): "Heute" / "Morgen"
           // / "So, 08.11." vor dem ersten Spiel jedes Tags.
@@ -2751,6 +2795,7 @@
     </script>
   </body>
 </html>
+
 
 
 
