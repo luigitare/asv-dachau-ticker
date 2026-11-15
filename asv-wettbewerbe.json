@@ -30,14 +30,14 @@
     {
       "wettbewerb": "12ad8590-9ed2-4e10-9356-9c296bed5568",
       "liga": "Regionalliga Süd-Ost Männer",
-      "spiele": 3,
+      "spiele": 2,
       "asvTeams": [
         "ASV Dachau III"
       ],
       "gegnerBeispiele": [
         "ASV Dachau III",
-        "TSV Herrsching II",
-        "MTV Rosenheim"
+        "MTV Rosenheim",
+        "TSV Friedberg"
       ]
     },
     {
@@ -77,6 +77,19 @@
         "ASV Dachau III",
         "SV Heimstetten",
         "SV Lohhof II"
+      ]
+    },
+    {
+      "wettbewerb": "697b5a4a-09ad-4d03-9ceb-67c25998e305",
+      "liga": "U16 Südliga 3/4 männlich",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau 3"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau 3",
+        "Verlierer Spiel 1",
+        "Gewinner Spiel 1"
       ]
     },
     {
