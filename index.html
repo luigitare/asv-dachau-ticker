@@ -51,6 +51,17 @@
       .asvcard.done b { color: #374151; }
       .asvcard.done b.asv { color: #1e3a8a; }
       .asvcard .erg { font-weight: 700; color: #111827; font-size: .78rem; }
+      /* v80 (Nutzer-Wunsch 15.11.): ASV-Karten fest ZWEIZEILIG - Zeile 1
+         = Team-Label + Uhrzeit/Status + Liga (rechts, mit "…" gekuerzt),
+         Zeile 2 = Paarung + Ergebnis rechtsbuendig, damit man die
+         Ergebnisse am rechten Rand senkrecht ablesen kann. Gescoped auf
+         .asvheute - Such-/Favoriten-Karten behalten ihr altes Layout. */
+      .asvheute .asvcard { flex-direction: column; align-items: stretch; flex-wrap: nowrap; gap: .15rem; }
+      .asvheute .asvcard .ac-top { display: flex; align-items: baseline; gap: .4rem; min-width: 0; }
+      .asvheute .asvcard .ac-top .hcliga { margin-left: auto; flex: 0 1 auto; }
+      .asvheute .asvcard .ac-bottom { display: flex; align-items: baseline; gap: .4rem; }
+      .asvheute .asvcard .ac-bottom .paarung { flex: 0 1 auto; }
+      .asvheute .asvcard .ac-ergebnis { margin-left: auto; flex: 0 0 auto; display: inline-flex; align-items: baseline; gap: .3rem; }
       /* Team-Suche: Eingabefeld + Trefferliste (Modus-Chip "Suche") */
       .suchwrap { display: flex; flex-direction: column; gap: .4rem; margin: 0 0 .55rem; }
       .suchinput {
@@ -1736,8 +1747,10 @@
               : "";
             const paarung =
               '<span class="paarung"><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b> – <b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b></span>';
-            card.innerHTML = '<span class="klasse">' + escHtml(klasse) + '</span>' + zeitHtml + paarung + ergHtml
-              + (liga ? '<span class="hcliga">' + escHtml(liga) + '</span>' : '');
+            card.innerHTML =
+              '<div class="ac-top"><span class="klasse">' + escHtml(klasse) + '</span>' + zeitHtml
+              + (liga ? '<span class="hcliga">' + escHtml(liga) + '</span>' : '') + '</div>'
+              + '<div class="ac-bottom">' + paarung + (ergHtml ? '<span class="ac-ergebnis">' + ergHtml + '</span>' : '') + '</div>';
             if (t) {
               card.title = m.t1r + " – " + m.t2r + (liga ? " (" + liga + ")" : "") + " · " + (live
                 ? "Zum Live-Ticker: Mannschaftsfilter wechseln + Spiel anpinnen"
@@ -2851,6 +2864,7 @@
     </script>
   </body>
 </html>
+
 
 
 
