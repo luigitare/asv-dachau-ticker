@@ -1828,7 +1828,7 @@
       function renderWettbewerbRow() {
         if (!state.wettb) return;
         // Bereits angezeigtes Spiel-Detail NICHT neu bauen (sonst laedt
-        // der Ticker-iframe bei jedem Index-Refresh alle 10 Min neu).
+        // der Ticker-iframe bei jedem Index-Refresh alle 3 Min neu).
         if (state.wettb.detail && asvHeuteRow.firstChild
           && asvHeuteRow.firstChild.dataset
           && asvHeuteRow.firstChild.dataset.detail === state.wettb.detail) return;
@@ -2685,18 +2685,26 @@
         fetch(TICKERS_URL + "?t=" + Date.now(), { headers: { Accept: "application/json" } })
           .then((r) => (r.ok ? r.json() : null))
           .then((data) => { if (data) parseTickerIndex(data); })
-          .catch(() => { /* Netz weg: alter Stand bleibt, naechster Versuch in 10 Min */ })
+          .catch(() => { /* Netz weg: alter Stand bleibt, naechster Versuch in 3 Min */ })
           .finally(() => { tickerIndexLaden = false; });
       }
 
-      // Index nach App-Start (2,5 s) laden und alle 10 Min auffrischen
+      // Index nach App-Start (2,5 s) laden und alle 3 Min auffrischen
       // (Cache-Buster ?t= im fetch umgeht den Service-Worker-Cache).
+      // v75 (15.11.): Takt 10 -> 3 Min (Nutzer-Wunsch, schnellere
+      // LIVE-Erkennung in der Heute-Zeile; GitHub-Pages-JSON ist nicht
+      // gedrosselt) + beim Zurueckkehren in die App sofort frisch
+      // ziehen (visibilitychange), damit der Oeffnungs-Zustand nie
+      // aelter als ein paar Sekunden ist.
       // WICHTIG: Ohne diese beiden Aufrufe bleibt tickerIndex = null und
       // Heute-Zeile, ASV-heute-Liste UND Team-Suche zeigen endlos
       // "Spiele werden geladen …" (Zeilen waren beim v12-Feinschliff
       // versehentlich mit entfernt – 31.10. zurückgebaut).
       setTimeout(refreshTickerIndex, 2500);
-      setInterval(refreshTickerIndex, 10 * 60 * 1000);
+      setInterval(refreshTickerIndex, 3 * 60 * 1000);
+      document.addEventListener("visibilitychange", () => {
+        if (!document.hidden) refreshTickerIndex();
+      });
 
       // ---------------- Fallback, falls Einbetten gesperrt ----------------
       setTimeout(() => {
@@ -2803,6 +2811,7 @@
     </script>
   </body>
 </html>
+
 
 
 
