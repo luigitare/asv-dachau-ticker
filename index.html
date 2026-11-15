@@ -1589,7 +1589,16 @@
         const z = (c.grp || "").match(/(?:Herren|Damen)\s+(\d+)/);
         if (z) return catRang + Number(z[1]) * 10;
         const u = (c.grp || "").match(/U(\d+)/);
-        if (u) return catRang + (30 - Number(u[1])) * 10; // U20=100 .. U12=180
+        if (u) {
+          // v79 (Nutzer-Wunsch 15.11.): auch die römische Ziffer des
+          // Teams (II/III/IV) in den Rang - U20 II, U20 III und U20 IV
+          // sind EIGENE Blöcke, sonst mischen sich die Teams innerhalb
+          // der Altersklasse (geplantes U20-IV-Spiel sprang vor
+          // beendete U20-III-Spiele von 10:00).
+          const zr = { II: 10, III: 20, IV: 30, V: 40, VI: 50 }[
+            ((c.team || "").match(/ASV Dachau\s+([IVX]+)$/) || [])[1] || ""] ?? 0;
+          return catRang + (30 - Number(u[1])) * 10 + zr; // U20=100 .. U12=180 + Ziffer
+        }
         return catRang + 950;
       }
       function configForMatch(m) {
