@@ -1539,6 +1539,24 @@
         // App-Hintergrund (Variante 2 aus der Vorschau). Der dezent
         // blaue Scrollbalken selbst ist reines CSS (siehe .heutecards).
         heuteRow.classList.toggle("scrollmehr", wrap.scrollWidth > wrap.clientWidth + 4);
+        // v76 (Nutzer-Wunsch 15.11.): Ist eine Karte gepinnt (blaue
+        // Auswahl), die gerade NICHT im sichtbaren Bereich liegt,
+        // sanft zu ihr scrollen - die Auswahl kann sonst hinten in
+        // der Zeile stehen und niemand sieht, welches Spiel aktiv
+        // ist. Nur bei nicht sichtbarer Karte: Liegt sie schon im
+        // Bild, passiert nichts (kein Springen beim eigenen Scrollen
+        // und kein Muell aus Sichtbarkeits-Loops). Karte links vom
+        // Sichtfenster (nach vorn gescrollt) wird ebenfalls angefahren.
+        const pinCard = wrap.querySelector(".heutecard.pinned");
+        if (pinCard) {
+          const cardLinks = pinCard.offsetLeft - wrap.offsetLeft;
+          const cardRechts = cardLinks + pinCard.offsetWidth;
+          const sichtLinks = wrap.scrollLeft;
+          const sichtRechts = sichtLinks + wrap.clientWidth;
+          if (cardRechts > sichtRechts + 4 || cardLinks + 4 < sichtLinks) {
+            wrap.scrollTo({ left: Math.max(0, cardLinks - 8), behavior: "smooth" });
+          }
+        }
         // Falls der Ticker zuvor ausgeblendet war (z. B. Index-Update
         // hat jetzt Spiele fuer das Team): Ansicht wiederherstellen.
         showEntry();
