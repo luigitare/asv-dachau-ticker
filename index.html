@@ -1651,9 +1651,12 @@
               const ta = berlinTag(a.date), tb = berlinTag(b.date);
               const ha = ta === heute, hb = tb === heute;
               if (ha && hb) {
-                // innerhalb heute (v72): kommende aufsteigend, dann die beendeten
-                if (!!a.fi !== !!b.fi) return a.fi ? 1 : -1;
-                return a.date - b.date;
+                // innerhalb heute (v78, Nutzer-Wunsch 15.11.): nach
+                // MANNSCHAFT gruppieren wie die kommenden Tage
+                // (asvTeamRang, v62) - v72 war rein chronologisch,
+                // da sprangen die Teams durcheinander. Innerhalb der
+                // Mannschaft kommende vor beendeten, dann Uhrzeit.
+                return asvTeamRang(a) - asvTeamRang(b) || (!!a.fi - !!b.fi) || (a.date - b.date);
               }
               if (ha !== hb) return ha ? -1 : 1;
               if (ta !== tb) return ta < tb ? -1 : 1;
@@ -1694,7 +1697,16 @@
               wrap.appendChild(kopf);
             }
             const t = configForMatch(m);
-            const klasse = t ? t.grp : "ASV";
+            // v78 (Nutzer-Wunsch 15.11.): Jugend-Label um die römische
+            // Ziffer des Teams ergänzen ("U16 II" statt "U16") - es gibt
+            // je Altersklasse mehrere Teams, sonst nicht auf den ersten
+            // Blick erkennbar, welches gemeint ist. Herren/Damen-Grps
+            // (z. B. "Herren 6") sind bereits eindeutig.
+            let klasse = t ? t.grp : "ASV";
+            if (t && /^U\d+/.test(klasse)) {
+              const z = (t.team || "").match(/ASV Dachau\s+([IVX]+)$/);
+              if (z) klasse = klasse + " " + z[1];
+            }
             const liga = ligaName(m.series);
             const live = !!(m.an && !m.fi);
             const fertig = !!m.fi;
@@ -2830,6 +2842,7 @@
     </script>
   </body>
 </html>
+
 
 
 
