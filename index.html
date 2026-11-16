@@ -339,7 +339,7 @@
         display: flex; flex-direction: column; align-items: stretch; gap: .12rem; flex-shrink: 0;
         border: 1px solid #d1d5db; background: #fff; border-radius: 10px;
         padding: .4rem .55rem; font-size: .74rem; cursor: pointer; white-space: normal;
-        min-width: 180px; max-width: 320px;
+        min-width: 140px; max-width: 320px;
       }
       /* 3-Zeilen-Gegner-Karte (v47): Zeile 1 Status+Datum+▶ / Zeile 2 Liga / Zeile 3 Ort+Gegner+Ergebnis */
       .hc-top { display: flex; align-items: center; justify-content: space-between; gap: .3rem; }
@@ -1558,13 +1558,17 @@
           const ergFertig = (m.fi && m.sp1 !== undefined && m.sp2 !== undefined) ? m.sp1 + ":" + m.sp2 : "";
           const card = document.createElement("button");
           card.className = "heutecard" + (live ? " live" : "") + (fertig ? " done" : "") + (pinAktiv ? " pinned" : "") + (!live && !fertig ? " inaktiv" : "");
-          // Karten-Design (v48, Nutzer-Wunsch 06.11.): 3-Zeilen-Karte
-          // mit VOLLER PAARUNG statt Gegner-Prinzip:
+          // Karten-Design (v91, Nutzer-Wunsch 16.11.): ZWEIZEILIGE Karte,
+          // noch enger fuer lange Namen:
           //   Zeile 1: Status-Icon (LIVE ausgeschrieben rot / ✅ / 📅)
           //            + Datum·Uhrzeit + ▶ bei klickbaren Spielen
-          //   Zeile 2: Liga-Name (schwarz, gut lesbar)
-          //   Zeile 3: Heim – Auswaerts (Spielfeld-Reihenfolge, ASV
+          //   Zeile 2: Heim – Auswaerts (Spielfeld-Reihenfolge, ASV
           //            blau) + Satz-Ergebnis (rechts)
+          // Liga-Zeile ENTFERNT (steht weiter im Tooltip), und in der
+          // Paarung wird "ASV Dachau" nur hier ANZEIGE-maessig zu
+          // "ASV" gekuerzt ("ASV Dachau II" -> "ASV II") - Logik,
+          // Filter und Tooltip nutzen weiter den vollen Namen.
+          const kurz = (s) => (s || "").replace(/^ASV Dachau(\s+|$)/, "ASV$1");
           const liga = ligaName(m.series);
           const status = live
             ? '<span class="hc-status live"><span class="livedot"></span>LIVE</span>'
@@ -1577,8 +1581,7 @@
               '<span class="hc-datum">' + datumZeit + '</span>' +
               ((live || fertig) ? '<span class="hc-go" aria-hidden="true">▶</span>' : "") +
             '</span>' +
-            (liga ? '<span class="hcliga">' + escHtml(liga) + '</span>' : "") +
-            '<span class="hc-geit"><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t1r) + '</b><span class="hc-vs">–</span><b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(m.t2r) + '</b>' + (ergFertig ? '<span class="erg">' + ergFertig + '</span>' : "") + '</span>';
+            '<span class="hc-geit"><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(kurz(m.t1r)) + '</b><span class="hc-vs">–</span><b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(kurz(m.t2r)) + '</b>' + (ergFertig ? '<span class="erg">' + ergFertig + '</span>' : "") + '</span>';
           if (live || fertig) {
             card.title = m.t1r + " – " + m.t2r + (liga ? " (" + liga + ")" : "") + " · " + (live
               ? "Dieses Spiel läuft gerade – Live-Ticker öffnen (erneut antippen = Pin entfernen)"
