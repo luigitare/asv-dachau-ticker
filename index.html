@@ -158,6 +158,32 @@
         box-shadow: 0 10px 30px rgba(0,0,0,.18);
         max-height: 75vh; overflow-y: auto;
       }
+      /* v86 (Nutzer-Wunsch 16.11.): ✕-Zeile OBEN im Menü – sticky, bleibt
+         beim Scrollen immer sichtbar. Auf kleinen Handys war der untere
+         "Menü schließen"-Knopf hinter der Such-Trefferliste unsichtbar. */
+      .xrow {
+        position: sticky; top: -.8rem; z-index: 6;
+        display: flex; align-items: center; gap: .45rem;
+        width: calc(100% + 1.6rem); margin: -.8rem -.8rem .55rem;
+        padding: 0 .8rem .45rem;
+        background: #fff; border: 0; border-bottom: 1px solid #e5e7eb;
+        font-size: .78rem; font-weight: 600; color: #1e3a8a;
+        cursor: pointer; text-align: left;
+      }
+      .xrow:active { color: #2563eb; }
+      .xrow .xk {
+        width: 26px; height: 26px; flex: 0 0 auto;
+        border: 1px solid #d1d5db; border-radius: 999px; background: #fff;
+        color: #1e3a8a; font-size: .85rem; font-weight: 700;
+        display: flex; align-items: center; justify-content: center;
+      }
+      /* v86: Such-Modus = Karte scrollt selbst NICHT mehr (flex-Layout),
+         die Trefferliste füllt den Platz über dem ✕-Knopf – nur EIN
+         Scrollen statt doppelt (Karte 75vh + Liste 45vh vorher). */
+      .menupanel .card.suchmodus { display: flex; flex-direction: column; overflow: hidden; }
+      .menupanel .card.suchmodus #sucheRow { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+      .menupanel .card.suchmodus .suchwrap { flex: 1; min-height: 0; margin: 0; }
+      .menupanel .card.suchmodus .suchcards { max-height: none; flex: 1; min-height: 0; }
       h1 { font-size: .95rem; margin: 0; display: inline; }
       .sub { color: #6b7280; font-size: .78rem; margin-left: .35rem; }
 
@@ -424,6 +450,9 @@
       <!-- Menü als Overlay: blendet ÜBER den Inhalt -->
       <div class="menupanel" id="menuPanel">
         <div class="card">
+          <!-- v86: ✕-Zeile oben, sticky – auf kleinen Handys war der
+               untere Schließen-Knopf hinter der Trefferliste weg -->
+          <button class="xrow" id="menuXBtn" type="button"><span class="xk">✕</span> Menü schließen</button>
           <div class="rowlabel2">Ansicht</div>
           <!-- Zeile 0: Modus-Wahl (ersetzt die frueheren Fuss-Buttons) -->
           <div class="filterrow" id="modeRow"></div>
@@ -795,7 +824,7 @@
         if (warOffen) navDismissNext = true;
         renderAll();
       };
-      document.getElementById("menuCloseBtn").onclick = () => {
+      const closeMenu = () => {
         menuOpen = false;
         // Die Suche läuft IM Menü: Menü schließen beendet sie und
         // zeigt die bisherige Auswahl wieder an
@@ -803,6 +832,9 @@
         navDismissNext = true; // v56: Schließen ist kein Vorwärts-Schritt
         renderAll();
       };
+      document.getElementById("menuCloseBtn").onclick = closeMenu;
+      // v86: gleicher Handler für die sticky ✕-Zeile oben
+      document.getElementById("menuXBtn").onclick = closeMenu;
 
       // ---------------- Intro beim allerersten Start ----------------
       // Erscheint genau 1x (localStorage-Flag), danach nie wieder von
@@ -2579,8 +2611,11 @@
       function renderSucheRow() {
         sucheRow.innerHTML = "";
         sucheRow.style.display = "none";
+        // v86: Karte im Such-Modus auf flex umstellen (siehe CSS) –
+        // nur die Trefferliste scrollt, der ✕-Knopf bleibt sichtbar
+        menuPanel.firstElementChild.classList.toggle("suchmodus", !!state.search);
         if (!state.search) return;
-        sucheRow.style.display = "block";
+        sucheRow.style.display = "flex";
         const lab = document.createElement("div");
         lab.className = "rowlabel2 suchlabel";
         lab.textContent = "Verein, Team oder Wettbewerb suchen";
@@ -2937,6 +2972,7 @@
     </script>
   </body>
 </html>
+
 
 
 
