@@ -94,12 +94,14 @@
       }
       .vgtoggle .vgpfeil { margin-left: auto; color: #1e3a8a; transition: transform .18s; }
       .vgtoggle.offen .vgpfeil { transform: rotate(90deg); }
-      /* v83 (Nutzer-Wunsch 16.11.): solange der Block offen ist,
-         ist der Balken BLAU hinterlegt (Aktiv-Zustand wie die
-         App-Knoepfe) - man sieht sofort, dass die folgenden
-         Karten zum aufgeklappten "Vergangene Spiele"-Block
-         gehoeren. */
-      .vgtoggle.offen { background: #eff6ff; border-color: #2563eb; }
+      /* v83/v84 (Nutzer-Wunsch 16.11.): solange der Block offen ist,
+         ist der Balken DUNKELBLAU hinterlegt wie die angepinnten
+         Karten in der Mannschaftsansicht (#1e3a8a, weisse Schrift) -
+         man sieht sofort, dass die folgenden Karten zum aufgeklappten
+         "Vergangene Spiele"-Block gehoeren. */
+      .vgtoggle.offen { background: #1e3a8a; border-color: #1e3a8a; color: #fff; }
+      .vgtoggle.offen .vgpfeil { color: #fff; }
+      .vgtoggle.offen .vgzahl { background: rgba(255,255,255,.25); color: #fff; }
       .vgwrap { margin-bottom: .4rem; }
       /* Liga-/Wettbewerbs-Name auf den Spiel-Karten (06.11.): dezente
          kleine Zeile, bricht um, wenn der Name lang ist. */
@@ -1838,11 +1840,15 @@
                   renderAll();
                   return;
                 }
-                // Toggle (31.10.-Fix): Pin VOR renderAll aendern, sonst
-                // rendert die Heute-Karte mit altem Pin-Stand (weiss).
+                // v84 (Nutzer-Wunsch 16.11.): Klick in der Liste PINNT
+                // IMMER - kein Toggle mehr. Grund: Pins verfallen nie,
+                // am Spieltag gepinnte (oder per v72-Live-Vorauswahl
+                // automatisch gepinnte) Spiele wurden beim spaeteren
+                // Klick aus der Liste sonst ENTPINNT und wirkten
+                // "nicht aktiviert". Entfernen geht weiterhin ueber die
+                // angepinnte Karte in der Mannschaftsansicht.
                 const u = tickerDetailUrl(m);
-                if (t.el && pinOf(t.idx) === u && t.el._pinDel) t.el._pinDel();
-                else if (t.el && t.el._pinTo) t.el._pinTo(u);
+                if (t.el && t.el._pinTo) t.el._pinTo(u);
                 renderAll();
               };
             } else {
