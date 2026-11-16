@@ -936,7 +936,12 @@
           || (state.wettb && state.wettb.detail)); // Turnier-Spiel-Detail: iframe via asvHeuteRow
         // Teilen-Knopf bleibt immer sichtbar (jede Ansicht ist teilbar),
         // Neu-laden + Hinweis nur in der Ticker-Ansicht sinnvoll
-        floatBar.style.display = "flex";
+        // v89 (Nutzer-Wunsch 16.11.): Menü offen = komplette Floatbar
+        // ausblenden – die schwebenden Knöpfe lagen ÜBER dem geöffneten
+        // Menü (Kollision mit dem sticky ✕-Knopf unten). Beim Schließen
+        // kommen sie automatisch zurück (updateFloatbar läuft in jedem
+        // renderAll, auch beim Menü-Öffnen/-Schließen).
+        floatBar.style.display = menuOpen ? "none" : "flex";
         floatReload.style.display = tickerActive ? "flex" : "none";
       }
       // Schwebender Knopf wirkt auf die gerade aktive Ansicht
