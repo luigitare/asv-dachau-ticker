@@ -1653,7 +1653,9 @@
       }
       // v82 (16.11.): Aufklapp-Zustand "Vergangene Spiele" - Modul-
       // Variable, ueberlebt die 3-Min-Refreshes, Reset beim App-Start.
-      let vgOffen = false;
+      // v85 (Nutzer-Wunsch 16.11.): standardmaessig AUFGEKLAPPT,
+      // zuklappen per Balken weiterhin moeglich.
+      let vgOffen = true;
       function renderAsvHeuteRow() {
         asvHeuteRow.innerHTML = "";
         asvHeuteRow.style.display = "none";
