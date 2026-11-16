@@ -78,6 +78,23 @@
         margin: .35rem 0 -.05rem; padding-top: .15rem;
       }
       .taglabel:first-child { margin-top: 0; }
+      /* v82 (Nutzer-Wunsch 16.11.): aufklappbare Zeile "Vergangene
+         Spiele" ganz oben in der ASV-Spiele-Liste. Standard zugeklappt,
+         Tippen klappt die beendeten Spiele der letzten 2 Tage auf
+         (neuester Tag zuerst). */
+      .vgtoggle {
+        display: flex; align-items: center; gap: .45rem;
+        border: 1px solid #dbe2ea; background: #eef2f7; border-radius: 10px;
+        padding: .5rem .7rem; font-size: .8rem; font-weight: 700;
+        color: #1e3a8a; cursor: pointer; white-space: nowrap;
+      }
+      .vgtoggle .vgzahl {
+        background: #e5e7eb; color: #374151; border-radius: .55rem;
+        padding: 0 .45rem; font-size: .7rem; font-weight: 600;
+      }
+      .vgtoggle .vgpfeil { margin-left: auto; color: #1e3a8a; transition: transform .18s; }
+      .vgtoggle.offen .vgpfeil { transform: rotate(90deg); }
+      .vgwrap { margin-bottom: .4rem; }
       /* Liga-/Wettbewerbs-Name auf den Spiel-Karten (06.11.): dezente
          kleine Zeile, bricht um, wenn der Name lang ist. */
       /* Liga-Name auf den Spiel-Karten (v49): dezent grau als Kontext-
@@ -1626,6 +1643,9 @@
           || treffer.find((e) => asvName && asvName.includes(e.team))
           || treffer[0];
       }
+      // v82 (16.11.): Aufklapp-Zustand "Vergangene Spiele" - Modul-
+      // Variable, ueberlebt die 3-Min-Refreshes, Reset beim App-Start.
+      let vgOffen = false;
       function renderAsvHeuteRow() {
         asvHeuteRow.innerHTML = "";
         asvHeuteRow.style.display = "none";
@@ -1646,13 +1666,21 @@
           // beendeten), erst danach die kommenden Tage chronologisch
           // (innerhalb eines Tages Mannschafts-Reihenfolge, v62).
           const rang = (m) => (m.an && !m.fi) ? 0 : (!m.fi ? 1 : 2);
-          // Filter (Nutzer-Wunsch 02.11.): ab HEUTE inklusive - beendete
-          // Spiele aelterer Tage fallen raus, heute Beendete bleiben.
-          // berlinTag liefert "tt.mm.jjjj" - lexikographischer Vergleich.
+          // v82 (Nutzer-Wunsch 16.11.): beendete Spiele der letzten
+          // 2 Tage (gestern/vorgestern) bleiben zusaetzlich drin -
+          // sie erscheinen ganz oben im aufklappbaren Block
+          // "Vergangene Spiele". Samstag-Spiele also So+Mo sichtbar,
+          // ab Di automatisch raus.
+          const gesternTag = berlinTag(Date.now() - 24 * 3600000);
+          const vorgesternTag = berlinTag(Date.now() - 48 * 3600000);
+          // Filter (Nutzer-Wunsch 02.11.): ab HEUTE inklusive - heute
+          // Beendete bleiben, aeltere Beendete nur noch im 2-Tage-
+          // Fenster (v82). berlinTag = "tt.mm.jjjj", lexikographisch.
           const spiele = tickerIndex
             .filter((m) => {
               const tag = berlinTag(m.date);
-              if (!(tag >= heute && (!m.fi || tag === heute) &&
+              if (!(((tag >= heute && (!m.fi || tag === heute)) ||
+                (m.fi && (tag === gesternTag || tag === vorgesternTag))) &&
                 ((m.t1r && m.t1r.includes("ASV Dachau")) || (m.t2r && m.t2r.includes("ASV Dachau"))))) return false;
               // v66: "Alle maennlich"/"Alle weiblich" – Filter auf den
               // Bereich (Herren+jm bzw. Damen+jw) per CONFIG-Zuordnung.
@@ -1684,6 +1712,20 @@
               // Reihenfolge (Herren 1..x, Damen 1..x, Jugend M/W), dann Uhrzeit.
               return asvTeamRang(a) - asvTeamRang(b) || a.date - b.date;
             });
+          // v82 (Nutzer-Wunsch 16.11.): beendete Spiele der letzten
+          // 2 Tage trennen - sie kommen GANZ OBEN in einen eigenen
+          // aufklappbaren Block "🕘 Vergangene Spiele" (Standard:
+          // zugeklappt, damit LIVE-/Heute-Spiele im Blick bleiben).
+          // Neuester Tag zuerst, innerhalb des Tages wie die
+          // kommenden Tage (Mannschaft, dann Uhrzeit).
+          const vgSet = new Set(spiele.filter((m) => m.fi && berlinTag(m.date) < heute));
+          const vergangene = spiele.filter((m) => vgSet.has(m))
+            .sort((a, b) => {
+              const ta = berlinTag(a.date), tb = berlinTag(b.date);
+              if (ta !== tb) return ta > tb ? -1 : 1;
+              return asvTeamRang(a) - asvTeamRang(b) || a.date - b.date;
+            });
+          const liste = vergangene.concat(spiele.filter((m) => !vgSet.has(m)));
           // Tages-Überschriften (Nutzer-Wunsch 02.11.): "Heute" / "Morgen"
           // / "So, 08.11." vor dem ersten Spiel jedes Tags.
           const morgenTag = berlinTag(Date.now() + 24 * 3600000);
@@ -1694,7 +1736,7 @@
             return tagDatumFmt.format(new Date(m.date)).replace(".,", ",");
           };
           let lastTag = "";
-          if (!spiele.length) {
+          if (!liste.length) {
             const leer = document.createElement("div");
             leer.className = "asvcard inaktiv";
             leer.textContent = "😄 Keine ASV-Spiele im Zeitraum";
@@ -1706,7 +1748,24 @@
             hinweis.textContent = "ℹ️ Live- und beendete Spiele öffnen den Ticker des Spiels – geplante führen zur Mannschaftsansicht.";
             wrap.appendChild(hinweis);
           }
-          spiele.forEach((m) => {
+          // v82: Aufklapp-Zeile "Vergangene Spiele" ganz oben (nur wenn
+          // es welche gibt), darunter der (zugeklappte) Block mit den
+          // beendeten Karten. vgOffen ueberlebt die 3-Min-Refreshes
+          // (Modul-Variable), wird aber beim App-Start zurueckgesetzt.
+          let vgWrap = null;
+          if (vergangene.length) {
+            const vgBtn = document.createElement("button");
+            vgBtn.type = "button";
+            vgBtn.className = "vgtoggle" + (vgOffen ? " offen" : "");
+            vgBtn.innerHTML = '<span class="vgtitel">🕘 Vergangene Spiele</span><span class="vgzahl">' + vergangene.length + '</span><span class="vgpfeil">›</span>';
+            vgBtn.onclick = () => { vgOffen = !vgOffen; renderAsvHeuteRow(); };
+            wrap.appendChild(vgBtn);
+            vgWrap = document.createElement("div");
+            vgWrap.className = "asvheute vgwrap";
+            if (!vgOffen) vgWrap.style.display = "none";
+            wrap.appendChild(vgWrap);
+          }
+          liste.forEach((m) => {
             // Tages-Überschrift, wenn ein neuer Tag beginnt
             const mTag = berlinTag(m.date);
             if (mTag !== lastTag) {
@@ -1714,7 +1773,7 @@
               const kopf = document.createElement("div");
               kopf.className = "taglabel";
               kopf.textContent = tagTitel(m);
-              wrap.appendChild(kopf);
+              (vgSet.has(m) ? vgWrap : wrap).appendChild(kopf);
             }
             const t = configForMatch(m);
             // v78 (Nutzer-Wunsch 15.11.): Jugend-Label um die römische
@@ -1783,7 +1842,7 @@
             } else {
               card.title = m.t1r + " – " + m.t2r + " · Klickbar, sobald die Mannschaft zugeordnet ist";
             }
-            wrap.appendChild(card);
+            (vgSet.has(m) ? vgWrap : wrap).appendChild(card);
           });
         }
         asvHeuteRow.appendChild(wrap);
