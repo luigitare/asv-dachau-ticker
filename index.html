@@ -343,7 +343,14 @@
       }
       /* 3-Zeilen-Gegner-Karte (v47): Zeile 1 Status+Datum+▶ / Zeile 2 Liga / Zeile 3 Ort+Gegner+Ergebnis */
       .hc-top { display: flex; align-items: center; justify-content: space-between; gap: .3rem; }
-      .hc-status { font-weight: 700; font-size: .8rem; letter-spacing: .02em; display: flex; align-items: center; gap: .3rem; color: #111827; }
+      /* v93 (Nutzer-Meldung 16.11.): bei geplanten Karten sass die Paarungs-
+         Zeile HOEHER als bei beendeten - das Kalender-Emoji 📅 rendert auf
+         Android mit anderen Hoehen-Metriken als ✅/LIVE-Text, dadurch hatte
+         die Zeile 1 je Kartentyp eine andere Hohe. Feste Zeilenhoehen fuer
+         beide Karten-Zeilen + Emoji auf line-height 1 => alle Karten
+         rendern identisch hoch, egal ob geplant/live/beendet. */
+      .hc-top { line-height: 1.35rem; }
+      .hc-status { font-weight: 700; font-size: .8rem; letter-spacing: .02em; display: flex; align-items: center; gap: .3rem; color: #111827; line-height: 1; }
       .hc-status.live { color: #b91c1c; }
       /* Datum/Uhrzeit: normal schwarz statt hellgrau (Nutzer-Wunsch 06.11.) */
       .hc-datum { color: #111827; font-size: .72rem; font-weight: 600; }
@@ -357,7 +364,7 @@
       /* Zeile 3: volle Paarung Heim – Auswaerts (v48), Ergebnis rechts.
          v49: Paarung FETT + minimal groesser – Hierarchie: Paarung
          springt ins Auge, Liga oben dezent, Datum schwarz normal. */
-      .hc-geit { display: flex; align-items: baseline; gap: .3rem; }
+      .hc-geit { display: flex; align-items: baseline; gap: .3rem; line-height: 1.35rem; }
       .hc-geit b { font-weight: 800; color: #111827; font-size: .84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
       .hc-geit b.asv { color: #1e3a8a; }
       /* v92 (Nutzer-Wunsch 16.11.): ASV-Name NIE kuerzen - er schrumpft
