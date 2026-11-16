@@ -94,6 +94,12 @@
       }
       .vgtoggle .vgpfeil { margin-left: auto; color: #1e3a8a; transition: transform .18s; }
       .vgtoggle.offen .vgpfeil { transform: rotate(90deg); }
+      /* v83 (Nutzer-Wunsch 16.11.): solange der Block offen ist,
+         ist der Balken BLAU hinterlegt (Aktiv-Zustand wie die
+         App-Knoepfe) - man sieht sofort, dass die folgenden
+         Karten zum aufgeklappten "Vergangene Spiele"-Block
+         gehoeren. */
+      .vgtoggle.offen { background: #eff6ff; border-color: #2563eb; }
       .vgwrap { margin-bottom: .4rem; }
       /* Liga-/Wettbewerbs-Name auf den Spiel-Karten (06.11.): dezente
          kleine Zeile, bricht um, wenn der Name lang ist. */
