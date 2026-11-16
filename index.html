@@ -360,6 +360,10 @@
       .hc-geit { display: flex; align-items: baseline; gap: .3rem; }
       .hc-geit b { font-weight: 800; color: #111827; font-size: .84rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 0 1 auto; }
       .hc-geit b.asv { color: #1e3a8a; }
+      /* v92 (Nutzer-Wunsch 16.11.): ASV-Name NIE kuerzen - er schrumpft
+         nicht mit (flex 0 0 auto), nur der Gegner kriegt bei Platznot
+         die Ellipsis (zusaetzlich per JS auf 18 Zeichen gekappt). */
+      .hc-geit b.asv { flex: 0 0 auto; overflow: visible; text-overflow: clip; }
       .hc-geit .erg { margin-left: auto; flex: 0 0 auto; font-weight: 800; }
       .heutecard:hover { border-color: #2563eb; background: #eff6ff; }
       .heutecard.pinned { border-color: #1e3a8a; background: #bfdbfe; }
@@ -1569,6 +1573,11 @@
           // "ASV" gekuerzt ("ASV Dachau II" -> "ASV II") - Logik,
           // Filter und Tooltip nutzen weiter den vollen Namen.
           const kurz = (s) => (s || "").replace(/^ASV Dachau(\s+|$)/, "ASV$1");
+          // v92 (Nutzer-Wunsch 16.11.): Gegner-Name in der Paarung max.
+          // 18 Zeichen + "..." (reale Gegner-Namen: ~90% <= 18 Zeichen,
+          // nur VSG/SG-Spielgemeinschaften laenger). Nur ANZEIGE -
+          // Tooltip, Logik und Filter nutzen weiter den vollen Namen.
+          const cap = (s) => { s = s || ""; return s.length > 18 ? s.slice(0, 18) + "…" : s; };
           const liga = ligaName(m.series);
           const status = live
             ? '<span class="hc-status live"><span class="livedot"></span>LIVE</span>'
@@ -1581,7 +1590,7 @@
               '<span class="hc-datum">' + datumZeit + '</span>' +
               ((live || fertig) ? '<span class="hc-go" aria-hidden="true">▶</span>' : "") +
             '</span>' +
-            '<span class="hc-geit"><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(kurz(m.t1r)) + '</b><span class="hc-vs">–</span><b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(kurz(m.t2r)) + '</b>' + (ergFertig ? '<span class="erg">' + ergFertig + '</span>' : "") + '</span>';
+            '<span class="hc-geit"><b' + (m.t1r && m.t1r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(kurz(m.t1r.includes("ASV Dachau") ? m.t1r : cap(kurz(m.t1r)))) + '</b><span class="hc-vs">–</span><b' + (m.t2r && m.t2r.includes("ASV Dachau") ? ' class="asv"' : "") + '>' + escHtml(kurz(m.t2r.includes("ASV Dachau") ? m.t2r : cap(kurz(m.t2r)))) + '</b>' + (ergFertig ? '<span class="erg">' + ergFertig + '</span>' : "") + '</span>';
           if (live || fertig) {
             card.title = m.t1r + " – " + m.t2r + (liga ? " (" + liga + ")" : "") + " · " + (live
               ? "Dieses Spiel läuft gerade – Live-Ticker öffnen (erneut antippen = Pin entfernen)"
