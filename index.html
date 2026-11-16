@@ -133,15 +133,18 @@
          ganze Karte (Screenshot 16.11.) und der Knopf lag unter dem
          sichtbaren Bereich. Der Knopf bleibt am gewohnten Platz, ist
          aber beim Chip-Scrollen immer am unteren Kartenrand sichtbar
-         (Chips laufen unter ihm weg, Schatten nach oben als Kante). */
+         (Chips laufen unter ihm weg, Schatten nach oben als Kante).
+         v90 (Nutzer-Wunsch 16.11.): DEUTLICHER – dunkelblau wie
+         gepinnte Karten / aufgeklappter VG-Balken (#1e3a8a, weisse
+         Schrift), damit er sofort ins Auge faellt. */
       .menupanel .card > .closebtn {
         position: sticky; bottom: -.8rem; z-index: 5;
         width: calc(100% + 1.6rem); margin: .6rem -.8rem -.8rem;
         padding: .55rem .8rem;
-        border: 0; border-top: 1px solid #e5e7eb;
+        border: 0; border-top: 0;
         border-radius: 0 0 12px 12px;
-        background: #f9fafb;
-        box-shadow: 0 -6px 14px rgba(31,41,55,.10);
+        background: #1e3a8a; color: #fff; font-weight: 700;
+        box-shadow: 0 -6px 14px rgba(31,41,55,.25);
       }
       .rowlabel2 { font-size: .65rem; color: #9ca3af; text-transform: uppercase; letter-spacing: .06em; margin: .2rem 0 .35rem; }
 
