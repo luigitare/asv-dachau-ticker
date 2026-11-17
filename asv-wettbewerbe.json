@@ -28,6 +28,20 @@
       ]
     },
     {
+      "wettbewerb": "099601cc-2ace-4f35-972d-ef030a587b39",
+      "liga": "Obb - U12 Kreisliga 3 männlich",
+      "spiele": 6,
+      "asvTeams": [
+        "ASV Dachau II",
+        "ASV Dachau V"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau V",
+        "MTV München",
+        "MTV München II"
+      ]
+    },
+    {
       "wettbewerb": "0aef379f-c42c-46a4-95e0-60ea4d7ba214",
       "liga": "2. Bundesliga Männer Süd",
       "spiele": 3,
@@ -281,14 +295,14 @@
     {
       "wettbewerb": "d14a83b4-3109-4be5-835b-e56282234a5b",
       "liga": "Obb - Bezirksklasse 1 Frauen",
-      "spiele": 3,
+      "spiele": 2,
       "asvTeams": [
         "ASV Dachau IV"
       ],
       "gegnerBeispiele": [
+        "SG ESV Ingolstadt / TSV Kösching",
         "ASV Dachau IV",
-        "SG Amper Volleys II",
-        "SG ESV Ingolstadt / TSV Kösching"
+        "SV Germering"
       ]
     },
     {
