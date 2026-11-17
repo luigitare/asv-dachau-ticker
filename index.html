@@ -1889,7 +1889,14 @@
                 saveState();
                 // Geplantes Spiel (Nutzer-Wunsch 31.10.): KEIN Pin,
                 // nur auf die Mannschaft filtern -> Liga-Ansicht.
+                // v94 (Nutzer-Meldung 17.11.): dabei den BESTEHENDEN Pin
+                // des Teams LOESCHEN (setPin direkt, wirkt auch wenn das
+                // Mannschafts-Element noch nicht gerendert ist) - Pins
+                // verfallen nie, sonst zeigte die Mannschaftsansicht
+                // nach dem Klick ein altes (z. B. beendetes) Spiel
+                // als selektiert.
                 if (!live && !fertig) {
+                  setPin(t.idx, "");
                   menuOpen = false;
                   renderAll();
                   return;
@@ -2992,6 +2999,7 @@
     </script>
   </body>
 </html>
+
 
 
 
