@@ -214,6 +214,21 @@
       ]
     },
     {
+      "wettbewerb": "b8c74624-00ff-40b5-9925-19a539d9307d",
+      "liga": "Obb - U12 Kreisliga 4 männlich",
+      "spiele": 8,
+      "asvTeams": [
+        "ASV Dachau",
+        "ASV Dachau III",
+        "ASV Dachau IV"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau",
+        "TuS Obermenzing",
+        "ASV Dachau III"
+      ]
+    },
+    {
       "wettbewerb": "c1368ade-ef29-4276-8802-4255b08f0b04",
       "liga": "U 16 Südliga 1 männlich",
       "spiele": 4,
