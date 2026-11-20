@@ -1530,6 +1530,17 @@
         // sind nie aelter als heute und bleiben unberuehrt.
         const vgGrenze = berlinTag(Date.now() - 5 * 24 * 60 * 60 * 1000);
         const spiele = tickerIndex.filter(istTeam).filter((m) => berlinTag(m.date) >= vgGrenze).sort((a, b) => rang(a) - rang(b) || a.date - b.date);
+        // v96 (Nutzer-Wunsch 20.11.): VERWAISTE PINS AUTOMATISCH ENTFERNEN.
+        // Pins verfielen bisher NIE (31.10.-Beschluss, "laufen still mit") –
+        // bleibt das gepinnte Spiel aber dauerhaft weg (Geisterspiel, das
+        // der Backend nicht mehr liefert, oder per 5-Tage-Grenze gefiltert),
+        // zeigte der Ticker das tote Spiel fuer immer im iframe. Gehoert die
+        // Pin-URL zu keiner Karte mehr, die in der Heute-Zeile sichtbar ist,
+        // verfaellt der Pin jetzt automatisch. Laeuft VOR showEntry() in
+        // renderAll, deshalb greift der aufgeraeumte Stand sofort im iframe.
+        const pinKeyVorab = fr ? fremdPinKey(fr) : t.idx;
+        const altePinUrl = pinOf(pinKeyVorab);
+        if (altePinUrl && !spiele.some((m) => tickerDetailUrl(m) === altePinUrl)) setPin(pinKeyVorab, "");
         if (!spiele.length) {
           // Kein Spiel der gewaehlten Mannschaft im ±7-Tage-Fenster:
           // Info-Zeile ueber dem Ticker – und der Live-Ticker (iframe)
