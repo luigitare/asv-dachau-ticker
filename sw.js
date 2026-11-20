@@ -1,4 +1,4 @@
-const CACHE = "asv-dachau-v96";
+const CACHE = "asv-dachau-v97";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./logo_c.svg"];
 
 self.addEventListener("install", (event) => {

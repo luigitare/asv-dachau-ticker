@@ -1146,7 +1146,7 @@
       function asvHeuteSpiele() {
         if (!tickerIndex || !tickerIndex.length) return [];
         const heute = berlinTag(Date.now());
-        return tickerIndex.filter((m) => berlinTag(m.date) === heute &&
+        return tickerIndex.filter((m) => m.tag === heute &&
           ((m.t1r && m.t1r.includes("ASV Dachau")) || (m.t2r && m.t2r.includes("ASV Dachau"))));
       }
       function asvHeuteCount(spiele, pred) {
@@ -1244,7 +1244,7 @@
         const tid = e.teamId || "";
         const nName = normTeam(e.team);
         const treffer = tickerIndex.filter((m) =>
-          (m.an && !m.fi && berlinTag(m.date) === heuteT) &&
+          (m.an && !m.fi && m.tag === heuteT) &&
           (tid ? (m.t1i === tid || m.t2i === tid)
                : (normTeam(m.t1r) === nName || normTeam(m.t2r) === nName)));
         treffer.sort((a, b) => a.date - b.date);
@@ -1519,7 +1519,7 @@
         const heuteSort = berlinTag(Date.now());
         const rang = (m) => {
           if (m.an && !m.fi) return 0;
-          if (berlinTag(m.date) === heuteSort) return m.fi ? 2 : 1;
+          if (m.tag === heuteSort) return m.fi ? 2 : 1;
           return m.fi ? 4 : 3;
         };
         // v95 (Nutzer-Wunsch 20.11.): Beendete Spiele erscheinen in der
@@ -1529,7 +1529,7 @@
         // (gleicher Mechanik wie heuteSort) – LIVE- und geplante Spiele
         // sind nie aelter als heute und bleiben unberuehrt.
         const vgGrenze = berlinTag(Date.now() - 5 * 24 * 60 * 60 * 1000);
-        const spiele = tickerIndex.filter(istTeam).filter((m) => berlinTag(m.date) >= vgGrenze).sort((a, b) => rang(a) - rang(b) || a.date - b.date);
+        const spiele = tickerIndex.filter(istTeam).filter((m) => m.tag >= vgGrenze).sort((a, b) => rang(a) - rang(b) || a.date - b.date);
         // v96 (Nutzer-Wunsch 20.11.): VERWAISTE PINS AUTOMATISCH ENTFERNEN.
         // Pins verfielen bisher NIE (31.10.-Beschluss, "laufen still mit") –
         // bleibt das gepinnte Spiel aber dauerhaft weg (Geisterspiel, das
@@ -1579,7 +1579,7 @@
           // beendet = klickbar fuer die Ticker-Vergangenheit.
           const live = !!(m.an && !m.fi);
           const fertig = !!m.fi;
-          const istHeute = berlinTag(m.date) === heute;
+          const istHeute = m.tag === heute;
           const zeit = zeitFmt.format(new Date(m.date));
           const tagDatum = tagDatumFmt.format(new Date(m.date)); // z. B. "Sa., 31.10."
           // Spielstand NUR bei beendeten Spielen (Nutzer-Wunsch 31.10.):
@@ -1758,7 +1758,7 @@
           // Fenster (v82). berlinTag = "tt.mm.jjjj", lexikographisch.
           const spiele = tickerIndex
             .filter((m) => {
-              const tag = berlinTag(m.date);
+              const tag = m.tag;
               if (!(((tag >= heute && (!m.fi || tag === heute)) ||
                 (m.fi && (tag === gesternTag || tag === vorgesternTag))) &&
                 ((m.t1r && m.t1r.includes("ASV Dachau")) || (m.t2r && m.t2r.includes("ASV Dachau"))))) return false;
@@ -1776,7 +1776,7 @@
               const la = rang(a) === 0, lb = rang(b) === 0;
               if (la !== lb) return la ? -1 : 1; // LIVE (v72) ganz vorne
               if (la && lb) return a.date - b.date; // mehrere LIVE: fruehestes zuerst
-              const ta = berlinTag(a.date), tb = berlinTag(b.date);
+              const ta = a.tag, tb = b.tag;
               const ha = ta === heute, hb = tb === heute;
               if (ha && hb) {
                 // innerhalb heute (v78, Nutzer-Wunsch 15.11.): nach
@@ -1798,10 +1798,10 @@
           // zugeklappt, damit LIVE-/Heute-Spiele im Blick bleiben).
           // Neuester Tag zuerst, innerhalb des Tages wie die
           // kommenden Tage (Mannschaft, dann Uhrzeit).
-          const vgSet = new Set(spiele.filter((m) => m.fi && berlinTag(m.date) < heute));
+          const vgSet = new Set(spiele.filter((m) => m.fi && m.tag < heute));
           const vergangene = spiele.filter((m) => vgSet.has(m))
             .sort((a, b) => {
-              const ta = berlinTag(a.date), tb = berlinTag(b.date);
+              const ta = a.tag, tb = b.tag;
               if (ta !== tb) return ta > tb ? -1 : 1;
               return asvTeamRang(a) - asvTeamRang(b) || a.date - b.date;
             });
@@ -1810,7 +1810,7 @@
           // / "So, 08.11." vor dem ersten Spiel jedes Tags.
           const morgenTag = berlinTag(Date.now() + 24 * 3600000);
           const tagTitel = (m) => {
-            const tag = berlinTag(m.date);
+            const tag = m.tag;
             if (tag === heute) return "Heute";
             if (tag === morgenTag) return "Morgen";
             return tagDatumFmt.format(new Date(m.date)).replace(".,", ",");
@@ -1847,7 +1847,7 @@
           }
           liste.forEach((m) => {
             // Tages-Überschrift, wenn ein neuer Tag beginnt
-            const mTag = berlinTag(m.date);
+            const mTag = m.tag;
             if (mTag !== lastTag) {
               lastTag = mTag;
               const kopf = document.createElement("div");
@@ -1870,7 +1870,7 @@
             const live = !!(m.an && !m.fi);
             const fertig = !!m.fi;
             const zeit = zeitFmt.format(new Date(m.date));
-            const istHeute = berlinTag(m.date) === heute;
+            const istHeute = m.tag === heute;
             // Datum-Anzeige (02.11.): heute nur Uhrzeit, kuenftige
             // Tage mit Wochentag + Datum (Liste reicht jetzt +7 Tage).
             const datumText = istHeute
@@ -2058,7 +2058,7 @@
             const zeitFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", hour: "2-digit", minute: "2-digit" });
             const tagFmt = new Intl.DateTimeFormat("de-DE", { timeZone: "Europe/Berlin", weekday: "short", day: "2-digit", month: "2-digit" });
             const zeit = zeitFmt.format(new Date(m.date));
-            const tag = berlinTag(m.date), heute = berlinTag(Date.now());
+            const tag = m.tag, heute = berlinTag(Date.now());
             const datumText = tag === heute
               ? (zeit === "00:00" ? "heute" : "heute · " + zeit)
               : tagFmt.format(new Date(m.date)).replace(".,", ",") + (zeit === "00:00" ? "" : " · " + zeit);
@@ -2098,13 +2098,13 @@
         const morgenTag = berlinTag(Date.now() + 24 * 3600000);
         const datumText = (m) => {
           const zeit = zeitFmt.format(new Date(m.date));
-          const tag = berlinTag(m.date);
+          const tag = m.tag;
           if (tag === heute) return zeit === "00:00" ? "heute" : "heute · " + zeit;
           const d = tagFmt.format(new Date(m.date)).replace(".,", ",");
           return d + (zeit === "00:00" ? "" : " · " + zeit);
         };
         const tagTitel = (m) => {
-          const tag = berlinTag(m.date);
+          const tag = m.tag;
           if (tag === heute) return "Heute";
           if (tag === morgenTag) return "Morgen";
           return tagFmt.format(new Date(m.date)).replace(".,", ",");
@@ -2235,7 +2235,7 @@
         if (ko.length) {
           let lastTag = "";
           ko.forEach((m) => {
-            const mTag = berlinTag(m.date);
+            const mTag = m.tag;
             if (mTag !== lastTag) {
               lastTag = mTag;
               const gl = document.createElement("div");
@@ -2302,7 +2302,7 @@
           const spiele = tickerIndex
             .filter((m) => m.series === state.wettb.series)
             .sort((a, b) => {
-              const ta = berlinTag(a.date), tb = berlinTag(b.date);
+              const ta = a.tag, tb = b.tag;
               if (ta !== tb) return ta < tb ? -1 : 1;
               return rang(a) - rang(b) || a.date - b.date;
             });
@@ -2320,13 +2320,13 @@
           }
           let lastTag = "";
           const tagTitel = (m) => {
-            const tag = berlinTag(m.date);
+            const tag = m.tag;
             if (tag === heute) return "Heute";
             if (tag === morgenTag) return "Morgen";
             return tagDatumFmt.format(new Date(m.date)).replace(".,", ",");
           };
           spiele.forEach((m) => {
-            const mTag = berlinTag(m.date);
+            const mTag = m.tag;
             if (mTag !== lastTag) {
               lastTag = mTag;
               const kopf2 = document.createElement("div");
@@ -2861,7 +2861,13 @@
             // Karte wird rot/klickbar sobald ANGELEGT (Nutzer-Regel),
             // nach fi=1 wieder normal. Aeltere Indizes ohne st/fi:
             // keine LIVE-Karte.
-            idx.push({ series: m.matchSeries, t1: normTeam(m.teamDescription1), t2: normTeam(m.teamDescription2), t1r: m.teamDescription1, t2r: m.teamDescription2, t1i: m.t1i || "", t2i: m.t2i || "", date: m.date, id: m.id, an: (m.st !== undefined && m.st !== null), st: m.st === 1, fi: m.fi === 1, sp1: m.sp1, sp2: m.sp2 });
+            // v97 (Nutzer-Wunsch 20.11., Performance): Den Berlin-Tag
+            // (tt.mm.jjjj) einmal pro Spiel beim Index-Parsen vorberechnen
+            // (m.tag). Vorher wurde JEDES mal bei Badges/Filtern/Sortierung
+            // berlinTag(m.date) mit dem langsamen Intl.DateTimeFormat neu
+            // formatiert – bei 3.100+ Spielen und ~40 Mannschafts-Chips,
+            // die alle bei jedem Menü-Klick neu bauen, spürbar träge.
+            idx.push({ series: m.matchSeries, t1: normTeam(m.teamDescription1), t2: normTeam(m.teamDescription2), t1r: m.teamDescription1, t2r: m.teamDescription2, t1i: m.t1i || "", t2i: m.t2i || "", date: m.date, id: m.id, tag: (m.date ? berlinTag(m.date) : ""), an: (m.st !== undefined && m.st !== null), st: m.st === 1, fi: m.fi === 1, sp1: m.sp1, sp2: m.sp2 });
           }));
         }
         tickerLigen = (data && data.ligen) || {};
