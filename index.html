@@ -441,6 +441,31 @@
         padding: .65rem 0; cursor: pointer;
       }
       .introlos:active { background: #1d4ed8; }
+      /* v98 (Nutzer-Wunsch 20.11.): Update-Hinweis als NICHT wegklickbares
+         Overlay in der Bildschirm-Mitte, sobald der Service Worker eine
+         neue App-Version bereitgestellt hat. Ein Klick auf "Neu laden"
+         uebernimmt die neue Version und laedt die App genau EINMAL neu
+         (controllerchange). Kein Auto-Reload - es wird nie ungefragt
+         mitten im Live-Spiel neu gestartet. */
+      .updateoverlay {
+        position: fixed; inset: 0; z-index: 550;
+        background: rgba(17, 24, 39, .66);
+        display: none; align-items: center; justify-content: center;
+        padding: 1rem;
+      }
+      .updatecard {
+        background: #fff; border-radius: 14px; max-width: 330px; width: 100%;
+        padding: 1.2rem 1.1rem 1rem; text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,.3);
+      }
+      .updatecard h2 { font-size: 1.15rem; margin: 0 0 .3rem; color: #1e3a8a; }
+      .updatecard p { font-size: .82rem; color: #6b7280; margin: 0 0 1rem; }
+      .updatecard button {
+        display: block; width: 100%; border: 0; border-radius: 10px;
+        background: #1e3a8a; color: #fff; font-size: .95rem; font-weight: 700;
+        padding: .65rem 0; cursor: pointer;
+      }
+      .updatecard button:active { background: #1d4ed8; }
       .introshare {
         display: block; width: 100%; margin: .55rem 0 .1rem; padding: .5rem 1rem;
         border: 1px solid #93c5fd; border-radius: 999px; background: #fff;
@@ -537,6 +562,15 @@
         <div class="introfenster">ℹ️ Spiele werden ca. 7 Tage im Voraus und 7 Tage zurück angezeigt.<br />💡 Die vier Punkte oben sind antippbar – du springst direkt in die Ansicht.</div>
         <button class="introshare" id="introShareBtn">🔗 App weiterempfehlen</button>
         <button class="introlos" id="introLosBtn">Los geht's!</button>
+      </div>
+    </div>
+
+    <!-- v98: Update-Overlay (neue App-Version) - nicht wegklickbar, Mitte -->
+    <div class="updateoverlay" id="updateOverlay">
+      <div class="updatecard">
+        <h2>🆕 Neue Version</h2>
+        <p>Vom ASV Ticker gibt es eine aktualisierte Version. Einmal neu laden, dann ist alles aktuell.</p>
+        <button id="updateReloadBtn" type="button">🔄 Neu laden</button>
       </div>
     </div>
 
@@ -3000,11 +3034,57 @@
       else init();
     })();
     </script>
-    <!-- PWA: Service Worker registrieren (Offline-Start, Installierbarkeit) -->
+    <!-- PWA: Service Worker registrieren (Offline-Start, Installierbarkeit).
+         v98: Update-Flow – installiert sich eine NEUE Version in den Cache,
+         die aber noch wartet (kein skipWaiting mehr im SW!), erscheint das
+         Update-Overlay in der Bildschirm-Mitte. Klick = SKIP_WAITING +
+         controllerchange = genau EIN Neuladen. Geprueft wird bei jedem
+         App-Start, bei Rueckkehr in die App (visibilitychange) und
+         stuendlich alle 60 Min.
+    -->
     <script>
-      if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.register("sw.js").catch(function () { /* offline-first optional */ });
-      }
+      (function () {
+        if (!("serviceWorker" in navigator)) return;
+        var swReg = null, waitingSW = null, ladeNeu = false;
+        var overlay = document.getElementById("updateOverlay");
+        var btn = document.getElementById("updateReloadBtn");
+
+        function zeigeUpdate(worker) {
+          waitingSW = worker || (swReg && swReg.waiting) || null;
+          if (overlay) overlay.style.display = "flex";
+        }
+
+        btn && btn.addEventListener("click", function () {
+          // Neue Version uebernehmen und GENAU EINMAL neu laden
+          if (waitingSW) waitingSW.postMessage({ type: "SKIP_WAITING" });
+          else window.location.reload();
+        });
+        navigator.serviceWorker.addEventListener("controllerchange", function () {
+          if (ladeNeu) return;
+          ladeNeu = true;
+          window.location.reload();
+        });
+
+        navigator.serviceWorker.register("sw.js").then(function (reg) {
+          swReg = reg;
+          // Bei REGISTER-Start bereits wartende Version? (App war laenger zu)
+          if (reg.waiting && navigator.serviceWorker.controller) zeigeUpdate(reg.waiting);
+          reg.addEventListener("updatefound", function () {
+            var nw = reg.installing;
+            if (!nw) return;
+            nw.addEventListener("statechange", function () {
+              // "installed" + aktiver Controller = Update vorhanden (kein Erst-Install)
+              if (nw.state === "installed" && navigator.serviceWorker.controller) zeigeUpdate(nw);
+            });
+          });
+          // Update-Pruefung bei Rueckkehr in die App …
+          document.addEventListener("visibilitychange", function () {
+            if (!document.hidden) reg.update().catch(function () {});
+          });
+          // … und stuendlich im Hintergrund
+          setInterval(function () { reg.update().catch(function () {}); }, 60 * 60 * 1000);
+        }).catch(function () { /* offline-first optional */ });
+      })();
     </script>
     <!-- Versionsanzeige: Datum des letzten Commits von GitHub abfragen -->
     <script>
