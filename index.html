@@ -1522,7 +1522,14 @@
           if (berlinTag(m.date) === heuteSort) return m.fi ? 2 : 1;
           return m.fi ? 4 : 3;
         };
-        const spiele = tickerIndex.filter(istTeam).sort((a, b) => rang(a) - rang(b) || a.date - b.date);
+        // v95 (Nutzer-Wunsch 20.11.): Beendete Spiele erscheinen in der
+        // Heute-Zeile nur noch bis 5 Tage NACH dem Spieltag (ein
+        // Samstagsspiel ist also bis Ende Donnerstag sichtbar, ab Freitag
+        // faellt es automatisch raus). LiveData-Vergleich per Berlin-Tag
+        // (gleicher Mechanik wie heuteSort) – LIVE- und geplante Spiele
+        // sind nie aelter als heute und bleiben unberuehrt.
+        const vgGrenze = berlinTag(Date.now() - 5 * 24 * 60 * 60 * 1000);
+        const spiele = tickerIndex.filter(istTeam).filter((m) => berlinTag(m.date) >= vgGrenze).sort((a, b) => rang(a) - rang(b) || a.date - b.date);
         if (!spiele.length) {
           // Kein Spiel der gewaehlten Mannschaft im ±7-Tage-Fenster:
           // Info-Zeile ueber dem Ticker – und der Live-Ticker (iframe)
@@ -2999,6 +3006,7 @@
     </script>
   </body>
 </html>
+
 
 
 
