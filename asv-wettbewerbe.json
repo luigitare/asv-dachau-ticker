@@ -4,7 +4,7 @@
     {
       "wettbewerb": "00572b76-b0a6-4730-9b69-965ef2c22335",
       "liga": "Obb - Bezirksliga West Frauen",
-      "spiele": 4,
+      "spiele": 6,
       "asvTeams": [
         "ASV Dachau III"
       ],
@@ -44,14 +44,14 @@
     {
       "wettbewerb": "0aef379f-c42c-46a4-95e0-60ea4d7ba214",
       "liga": "2. Bundesliga Männer Süd",
-      "spiele": 3,
+      "spiele": 2,
       "asvTeams": [
         "ASV Dachau"
       ],
       "gegnerBeispiele": [
         "ASV Dachau",
-        "Volley YoungStars Friedrichshafen",
-        "Keiler Volleys Stuttgart"
+        "Keiler Volleys Stuttgart",
+        "Baden Volleys SSC Karlsruhe II"
       ]
     },
     {
@@ -71,7 +71,7 @@
     {
       "wettbewerb": "12ad8590-9ed2-4e10-9356-9c296bed5568",
       "liga": "Regionalliga Süd-Ost Männer",
-      "spiele": 2,
+      "spiele": 3,
       "asvTeams": [
         "ASV Dachau III"
       ],
@@ -89,9 +89,9 @@
         "ASV Dachau II"
       ],
       "gegnerBeispiele": [
+        "SV Schwaig II",
         "ASV Dachau II",
-        "MTV München",
-        "SV Schwaig II"
+        "TSV Eibelstadt"
       ]
     },
     {
@@ -131,6 +131,19 @@
         "ASV Dachau 3",
         "Verlierer Spiel 1",
         "Gewinner Spiel 1"
+      ]
+    },
+    {
+      "wettbewerb": "71d66706-e82e-4bc8-bd7f-2ce0939496a5",
+      "liga": "Landesliga Süd-West Männer",
+      "spiele": 2,
+      "asvTeams": [
+        "ASV Dachau IV"
+      ],
+      "gegnerBeispiele": [
+        "ASV Dachau IV",
+        "TSV Haunstetten",
+        "Satellites Schwabmünchen"
       ]
     },
     {
@@ -204,7 +217,7 @@
     {
       "wettbewerb": "aea4d3ff-56de-403a-b67d-2fba4bf83fb8",
       "liga": "Obb - Bezirksliga West Männer",
-      "spiele": 2,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau V"
       ],
@@ -217,7 +230,7 @@
     {
       "wettbewerb": "b23cdb6e-d8b2-4c4e-ba3d-f5fbfda2c7fe",
       "liga": "Obb - Kreisliga 2 Frauen",
-      "spiele": 2,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau V"
       ],
@@ -324,7 +337,7 @@
     {
       "wettbewerb": "d14a83b4-3109-4be5-835b-e56282234a5b",
       "liga": "Obb - Bezirksklasse 1 Frauen",
-      "spiele": 2,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau IV"
       ],
@@ -335,11 +348,25 @@
       ]
     },
     {
-      "wettbewerb": "e4d55a45-caac-4452-9aee-9c3491273b78",
-      "liga": "Obb - Kreisliga 3 Männer",
+      "wettbewerb": "d5f041f4-9e64-427c-ba0d-a05d4466f98c",
+      "liga": "Obb - Bezirksklasse 2 Männer",
       "spiele": 2,
       "asvTeams": [
-        "ASV Dachau VII"
+        "ASV Dachau VI"
+      ],
+      "gegnerBeispiele": [
+        "TUSC Obermenzing",
+        "ASV Dachau VI",
+        "TSV Forstenried"
+      ]
+    },
+    {
+      "wettbewerb": "e4d55a45-caac-4452-9aee-9c3491273b78",
+      "liga": "Obb - Kreisliga 3 Männer",
+      "spiele": 6,
+      "asvTeams": [
+        "ASV Dachau VII",
+        "ASV Dachau VIII"
       ],
       "gegnerBeispiele": [
         "TSV Milbertshofen",
@@ -356,8 +383,8 @@
       ],
       "gegnerBeispiele": [
         "ASV Dachau",
-        "Dresdner SSV",
-        "VCO Dresden"
+        "VCO Dresden",
+        "TB/ASV Regenstauf"
       ]
     }
   ]
