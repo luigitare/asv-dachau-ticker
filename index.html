@@ -3069,6 +3069,11 @@
           swReg = reg;
           // Bei REGISTER-Start bereits wartende Version? (App war laenger zu)
           if (reg.waiting && navigator.serviceWorker.controller) zeigeUpdate(reg.waiting);
+          // v99: Update-Check SOFORT beim App-Start (Nutzer-Test v98:
+          // Overlay kam erst beim 2. Laden, weil der Browser sw.js nur
+          // bei Navigation prueft) – Overlay erscheint jetzt Sekunden
+          // nach dem Oeffnen, sobald eine neue Version bereit ist.
+          reg.update().catch(function () {});
           reg.addEventListener("updatefound", function () {
             var nw = reg.installing;
             if (!nw) return;

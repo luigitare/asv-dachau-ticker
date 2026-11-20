@@ -1,7 +1,4 @@
-// Service Worker: App-Shell cachen, Daten/Ticker IMMER live.
-// v98: KEIN skipWaiting mehr bei install – neue Versionen warten, bis der
-// Nutzer im Update-Overlay auf "Neu laden" klickt (postMessage SKIP_WAITING).
-const CACHE = "asv-dachau-v98";
+const CACHE = "asv-dachau-v99";
 const APP_SHELL = ["./", "./index.html", "./manifest.webmanifest", "./logo_c.svg"];
 
 self.addEventListener("install", (event) => {
