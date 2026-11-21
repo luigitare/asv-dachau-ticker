@@ -4,13 +4,13 @@
     {
       "wettbewerb": "00572b76-b0a6-4730-9b69-965ef2c22335",
       "liga": "Obb - Bezirksliga West Frauen",
-      "spiele": 6,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau III"
       ],
       "gegnerBeispiele": [
+        "SC Freising II",
         "ASV Dachau III",
-        "TUSC Obermenzing",
         "VSG München/Eiselfing/Unterhaching II"
       ]
     },
@@ -50,8 +50,8 @@
       ],
       "gegnerBeispiele": [
         "ASV Dachau",
-        "Keiler Volleys Stuttgart",
-        "Baden Volleys SSC Karlsruhe II"
+        "Baden Volleys SSC Karlsruhe II",
+        "TuS Kriftel"
       ]
     },
     {
@@ -71,14 +71,14 @@
     {
       "wettbewerb": "12ad8590-9ed2-4e10-9356-9c296bed5568",
       "liga": "Regionalliga Süd-Ost Männer",
-      "spiele": 3,
+      "spiele": 2,
       "asvTeams": [
         "ASV Dachau III"
       ],
       "gegnerBeispiele": [
         "ASV Dachau III",
-        "MTV Rosenheim",
-        "TSV Friedberg"
+        "TSV Friedberg",
+        "TSV Mühldorf II"
       ]
     },
     {
@@ -92,45 +92,6 @@
         "SV Schwaig II",
         "ASV Dachau II",
         "TSV Eibelstadt"
-      ]
-    },
-    {
-      "wettbewerb": "41e1fc91-a693-4b66-a242-088f50b5cab0",
-      "liga": "U16 Südliga 2 männlich",
-      "spiele": 4,
-      "asvTeams": [
-        "ASV Dachau II"
-      ],
-      "gegnerBeispiele": [
-        "ASV Dachau II",
-        "MTV München",
-        "TUSC Obermenzing"
-      ]
-    },
-    {
-      "wettbewerb": "4e072a0c-8b29-4ab3-b771-a881ec13a085",
-      "liga": "Obb - U16 Bezirksklasse 1 weiblich",
-      "spiele": 3,
-      "asvTeams": [
-        "ASV Dachau III"
-      ],
-      "gegnerBeispiele": [
-        "ASV Dachau III",
-        "SV Heimstetten",
-        "SV Lohhof II"
-      ]
-    },
-    {
-      "wettbewerb": "697b5a4a-09ad-4d03-9ceb-67c25998e305",
-      "liga": "U16 Südliga 3/4 männlich",
-      "spiele": 2,
-      "asvTeams": [
-        "ASV Dachau 3"
-      ],
-      "gegnerBeispiele": [
-        "ASV Dachau 3",
-        "Verlierer Spiel 1",
-        "Gewinner Spiel 1"
       ]
     },
     {
@@ -173,19 +134,6 @@
       ]
     },
     {
-      "wettbewerb": "906589ab-7222-4fbd-9f1b-12b36862517b",
-      "liga": "Obb - U20 Bezirksklasse 1 weiblich",
-      "spiele": 2,
-      "asvTeams": [
-        "ASV Dachau III"
-      ],
-      "gegnerBeispiele": [
-        "TSV Vaterstetten",
-        "ASV Dachau III",
-        "TSV 1862 Neuburg"
-      ]
-    },
-    {
       "wettbewerb": "92040698-62a0-4624-8eb5-8e8159210cb7",
       "liga": "Obb - U14 Bezirksliga weiblich",
       "spiele": 3,
@@ -199,45 +147,29 @@
       ]
     },
     {
-      "wettbewerb": "9e4b2072-f6a5-4baa-96ff-338f9a6f4cd2",
-      "liga": "Obb - U13 OBB Bezirksliga/Bezirksklasse männlich",
-      "spiele": 11,
-      "asvTeams": [
-        "ASV Dachau",
-        "ASV Dachau II",
-        "ASV Dachau III",
-        "ASV Dachau IV"
-      ],
-      "gegnerBeispiele": [
-        "ASV Dachau II",
-        "TSV Penzberg",
-        "TSV Herrsching"
-      ]
-    },
-    {
       "wettbewerb": "aea4d3ff-56de-403a-b67d-2fba4bf83fb8",
       "liga": "Obb - Bezirksliga West Männer",
-      "spiele": 4,
+      "spiele": 2,
       "asvTeams": [
         "ASV Dachau V"
       ],
       "gegnerBeispiele": [
-        "SC Vierkirchen",
+        "MTV Pfaffenhofen",
         "ASV Dachau V",
-        "SV Lohhof II"
+        "SC Vierkirchen"
       ]
     },
     {
       "wettbewerb": "b23cdb6e-d8b2-4c4e-ba3d-f5fbfda2c7fe",
       "liga": "Obb - Kreisliga 2 Frauen",
-      "spiele": 4,
+      "spiele": 2,
       "asvTeams": [
         "ASV Dachau V"
       ],
       "gegnerBeispiele": [
         "ASV Dachau V",
-        "TSV Neufahrn",
-        "SV Haimhausen"
+        "TV Markt Schwaben",
+        "SV Lohhof V"
       ]
     },
     {
@@ -253,19 +185,6 @@
         "ASV Dachau",
         "TuS Obermenzing",
         "ASV Dachau III"
-      ]
-    },
-    {
-      "wettbewerb": "c1368ade-ef29-4276-8802-4255b08f0b04",
-      "liga": "U 16 Südliga 1 männlich",
-      "spiele": 4,
-      "asvTeams": [
-        "ASV Dachau"
-      ],
-      "gegnerBeispiele": [
-        "ASV Dachau",
-        "TSV Unterhaching II",
-        "TSV Mühldorf"
       ]
     },
     {
@@ -290,22 +209,9 @@
         "ASV Dachau II"
       ],
       "gegnerBeispiele": [
-        "SV Esting",
+        "Lechrain Volleys",
         "ASV Dachau II",
-        "Lechrain Volleys"
-      ]
-    },
-    {
-      "wettbewerb": "c7a7d183-b089-47c4-a0b8-cf7c625acf4a",
-      "liga": "Obb - U16 Bezirksliga weiblich",
-      "spiele": 3,
-      "asvTeams": [
-        "ASV Dachau II"
-      ],
-      "gegnerBeispiele": [
-        "ASV Dachau II",
-        "TSV Unterhaching II",
-        "TSV TB München"
+        "FC Kleinaitingen II"
       ]
     },
     {
@@ -319,19 +225,6 @@
         "ASV Dachau III",
         "DJK Darching",
         "TSV Unterhaching III"
-      ]
-    },
-    {
-      "wettbewerb": "d1148f44-a0fb-4476-aca5-a5e3aaa2b478",
-      "liga": "Obb - U20 Kreisliga 2 weiblich",
-      "spiele": 2,
-      "asvTeams": [
-        "ASV Dachau IV"
-      ],
-      "gegnerBeispiele": [
-        "ASV Dachau IV",
-        "SVN München",
-        "TSV Eint. Karlsfeld"
       ]
     },
     {
@@ -363,15 +256,15 @@
     {
       "wettbewerb": "e4d55a45-caac-4452-9aee-9c3491273b78",
       "liga": "Obb - Kreisliga 3 Männer",
-      "spiele": 6,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau VII",
         "ASV Dachau VIII"
       ],
       "gegnerBeispiele": [
-        "TSV Milbertshofen",
-        "ASV Dachau VII",
-        "TUSC Obermenzing II"
+        "ASV Dachau VIII",
+        "SV SW München III",
+        "SF Harteck II"
       ]
     },
     {
@@ -382,9 +275,9 @@
         "ASV Dachau"
       ],
       "gegnerBeispiele": [
+        "TB/ASV Regenstauf",
         "ASV Dachau",
-        "VCO Dresden",
-        "TB/ASV Regenstauf"
+        "Neuseenland - Volleys Markkleeberg II"
       ]
     }
   ]
