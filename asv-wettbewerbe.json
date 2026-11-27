@@ -4,7 +4,7 @@
     {
       "wettbewerb": "00572b76-b0a6-4730-9b69-965ef2c22335",
       "liga": "Obb - Bezirksliga West Frauen",
-      "spiele": 4,
+      "spiele": 6,
       "asvTeams": [
         "ASV Dachau III"
       ],
@@ -57,7 +57,7 @@
     {
       "wettbewerb": "12ad8590-9ed2-4e10-9356-9c296bed5568",
       "liga": "Regionalliga Süd-Ost Männer",
-      "spiele": 2,
+      "spiele": 3,
       "asvTeams": [
         "ASV Dachau III"
       ],
@@ -88,9 +88,9 @@
         "ASV Dachau II"
       ],
       "gegnerBeispiele": [
-        "SV Schwaig II",
         "ASV Dachau II",
-        "TSV Eibelstadt"
+        "TSV Eibelstadt",
+        "VSV Jena"
       ]
     },
     {
@@ -148,7 +148,7 @@
     {
       "wettbewerb": "aea4d3ff-56de-403a-b67d-2fba4bf83fb8",
       "liga": "Obb - Bezirksliga West Männer",
-      "spiele": 2,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau V"
       ],
@@ -161,7 +161,7 @@
     {
       "wettbewerb": "b23cdb6e-d8b2-4c4e-ba3d-f5fbfda2c7fe",
       "liga": "Obb - Kreisliga 2 Frauen",
-      "spiele": 2,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau V"
       ],
@@ -169,21 +169,6 @@
         "ASV Dachau V",
         "TV Markt Schwaben",
         "SV Lohhof V"
-      ]
-    },
-    {
-      "wettbewerb": "b8c74624-00ff-40b5-9925-19a539d9307d",
-      "liga": "Obb - U12 Kreisliga 4 männlich",
-      "spiele": 10,
-      "asvTeams": [
-        "ASV Dachau",
-        "ASV Dachau III",
-        "ASV Dachau IV"
-      ],
-      "gegnerBeispiele": [
-        "ASV Dachau",
-        "TUSC Obermenzing",
-        "ASV Dachau III"
       ]
     },
     {
@@ -203,7 +188,7 @@
     {
       "wettbewerb": "c6bfb1ea-ab19-43cc-b864-ae48865c3c22",
       "liga": "Landesliga Süd-West Frauen",
-      "spiele": 2,
+      "spiele": 4,
       "asvTeams": [
         "ASV Dachau II"
       ],
@@ -229,7 +214,7 @@
     {
       "wettbewerb": "d14a83b4-3109-4be5-835b-e56282234a5b",
       "liga": "Obb - Bezirksklasse 1 Frauen",
-      "spiele": 5,
+      "spiele": 7,
       "asvTeams": [
         "ASV Dachau IV"
       ],
@@ -255,7 +240,7 @@
     {
       "wettbewerb": "e4d55a45-caac-4452-9aee-9c3491273b78",
       "liga": "Obb - Kreisliga 3 Männer",
-      "spiele": 4,
+      "spiele": 8,
       "asvTeams": [
         "ASV Dachau VII",
         "ASV Dachau VIII"
@@ -274,9 +259,9 @@
         "ASV Dachau"
       ],
       "gegnerBeispiele": [
-        "TB/ASV Regenstauf",
         "ASV Dachau",
-        "Neuseenland - Volleys Markkleeberg II"
+        "Neuseenland - Volleys Markkleeberg II",
+        "Chemnitzer VV"
       ]
     },
     {
